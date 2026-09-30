@@ -1,0 +1,28 @@
+ .left-right-content {
+   background-color: rgba(9, 104, 170, 0.7);
+   color: #ffffff;
+   padding: 0 20px 20px 20px;
+   border-radius: 24px;
+   margin-bottom: 20px;
+
+   .content {
+     display: flex;
+     gap: 20px;
+
+     .title {
+       margin-top: 8px;
+       font-family: MicrosoftYaHei;
+       font-size: 14px;
+       color: #ffffff;
+     }
+   }
+
+   .left,
+   .right {
+     width: 48%;
+     background: rgba(0, 0, 0, 0.3);
+     border-radius: 24px;
+     padding: 10px;
+   }
+
+ }

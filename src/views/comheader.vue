@@ -1,0 +1,284 @@
+<template>
+  <div class="header">
+    <img src="../assets/img/title.png" class="header-img" />
+    <div class="header-left">
+      <img src="../assets/img/location.png" alt="" class="img1" />
+      <div class="location">{{ location }}</div>
+      <img src="../assets/img/weather.png" alt="" class="img2" />
+      <span class="weather">晴朗 3°C</span>
+    </div>
+    <div class="header-center">
+      <div class="center-l">
+        <div
+          class="nav-button margintop1"
+          :class="{ navactive: activeButton === '综合态势' }"
+          @click="gotocommon"
+        >
+          综合态势
+        </div>
+        <div
+          class="nav-button"
+          :class="{ navactive: activeButton === '安防态势' }"
+          @click="gotosec"
+        >
+          安防态势
+        </div>
+        <div
+          class="nav-button margintop2"
+          :class="{ navactive: activeButton === '设备运行' }"
+          @click="gotodevice"
+        >
+          设备运行
+        </div>
+      </div>
+      <div class="center-r">
+        <div
+          class="nav-button btn-trans margintop2"
+          :class="{ navactive: activeButton === '能源管理' }"
+          @click="gotoEng"
+        >
+          <span>能源管理</span>
+        </div>
+        <div class="nav-button btn-trans"><span>资产管理</span></div>
+        <div
+          class="nav-button btn-trans margintop1"
+          :class="{ navactive: activeButton === '会展信息' }"
+          @click="gotoConvention"
+        >
+          <span>会展信息</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="warn-box">
+        <img src="../assets/img/warn.png" alt="" class="img3" />
+        <div class="warn-num">告警<span>(1)</span></div>
+      </div>
+
+      <div>
+        <div class="time">{{ currentTime }}</div>
+        <div class="date">{{ getDateWeek() }}</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { reactive, toRefs, ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+import { getDateWeek } from '@/utils/date.js'
+import { debounce } from '@/utils/commonFunc.js'
+
+// import { getLocation } from '@/api/amap.js'
+const router = useRouter()
+const data = reactive({
+  currentTime: '',
+  location: '定位中……',
+})
+const { currentTime, location } = toRefs(data)
+const activeButton = ref('综合态势')
+const updateTime = () => {
+  const now = new Date()
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  data.currentTime = `${hours}:${minutes}:${seconds}`
+}
+// 获取位置信息
+const getLoc = async () => {
+  let params = {
+    key: '你的高德地图API密钥', // 需要替换成你的密钥
+  }
+  const loc = await getLocation(params)
+}
+const gotocommon = debounce(
+  () => {
+    activeButton.value = '综合态势'
+    router.push('/')
+  },
+  300,
+  true
+)
+const gotosec = debounce(
+  () => {
+    activeButton.value = '安防态势'
+    router.push('/SecSituation')
+  },
+  300,
+  true
+)
+const gotodevice = debounce(
+  () => {
+    activeButton.value = '设备运行'
+    router.push('/device')
+  },
+  300,
+  true
+)
+const gotoEng = debounce(
+  () => {
+    activeButton.value = '能源管理'
+    router.push('/energy')
+  },
+  300,
+  true
+)
+const gotoConvention = debounce(
+  () => {
+    activeButton.value = '会展信息'
+    router.push('/convention')
+  },
+  300,
+  true
+)
+onMounted(() => {
+  updateTime()
+  setInterval(updateTime, 1000)
+  // getLoc()
+})
+
+// 组件卸载时清除定时器
+onUnmounted(() => {
+  clearInterval(updateTime)
+})
+</script>
+
+<style lang="scss" scoped>
+.header {
+  z-index: 9;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  // background-image: url('@/assets/img/title.png');
+  // background-size: 100% 120%;
+  // background-repeat: no-repeat;
+  color: #ffffff;
+  height: 180px;
+  .header-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: -1;
+  }
+  .header-left,
+  .header-center,
+  .header-right,
+  .center-l,
+  .center-r {
+    display: flex;
+    align-items: center;
+    padding-top: 12px;
+  }
+  .header-left,
+  .header-right {
+    width: 750px;
+  }
+  .img1 {
+    height: 36px;
+    margin-left: 64px;
+  }
+  .img2 {
+    height: 56px;
+  }
+  .location,
+  .weather,
+  .time,
+  .date {
+    margin-right: 15px;
+    font-size: 16px;
+    font-family: MicrosoftYaHei;
+  }
+  .time {
+    font-family: DINAlternate;
+  }
+  .location {
+    margin: 0 70px 0 12px;
+  }
+  .warn-box {
+    position: relative;
+    height: 100px;
+    margin-right: 68px;
+    margin-left: 200px;
+  }
+  .img3 {
+    height: 100px;
+  }
+  .warn-num {
+    position: absolute;
+    height: 150px;
+    top: 39%;
+    left: 41%;
+    font-size: 18px;
+    font-family: HuXiaoBo;
+  }
+  .time {
+    font-family: MicrosoftYaHei;
+    font-size: 36px;
+    background-image: linear-gradient(180deg, #ffffff 0%, #14fbfb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    letter-spacing: 4px;
+    font-weight: 600;
+  }
+  .nav-button {
+    width: 136px;
+    height: 48px;
+    line-height: 48px;
+    background-image: url('@/assets/img/btn.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    border: none;
+    color: #ffffff;
+    text-align: center;
+    padding: 6px;
+    cursor: pointer;
+    font-family: 'HuXiaoBo';
+    font-size: 18px;
+    transition: all 0.3s ease;
+  }
+  .navactive {
+    width: 136px;
+    height: 48px;
+    line-height: 48px;
+    background-image: url('@/assets/img/btn-active.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    font-family: 'HuXiaoBo';
+    font-size: 18px;
+  }
+  .margintop1 {
+    margin-top: -10px;
+  }
+  .margintop2 {
+    margin-top: 10px;
+  }
+  .btn-trans {
+    transform: scaleX(-1); /* 水平翻转背景 */
+    span {
+      display: inline-block;
+      transform: scaleX(-1); /* 将文字翻转回正常方向 */
+    }
+  }
+  .header-center {
+    width: 1900px;
+    display: flex;
+    justify-content: space-between;
+    // margin-left: -80px;
+
+    .center-l,
+    .center-r {
+      display: flex;
+      gap: 4px;
+      margin-top: 16px;
+    }
+  }
+}
+</style>

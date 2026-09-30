@@ -1,0 +1,27 @@
+@font-face {
+  font-family: 'HuXiaoBo';
+  src: url('@/assets/fonts/HuXiaoBo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINAlternate';
+  src:  url('@/assets/fonts/DIN Alternate Bold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Isemin';
+  src:  url('@/assets/fonts/Isemin.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Headlines-Bold';
+  src:  url('@/assets/fonts/Headlines-Bold.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+/* body, body * {
+	  font-family: 'CustomFont', sans-serif !important;
+	} */

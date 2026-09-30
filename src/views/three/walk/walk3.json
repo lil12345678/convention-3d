@@ -1,0 +1,62 @@
+{
+  "name": "MainTourPath",
+  "loop": true,
+  "points": [
+    {
+      "position": [-23.786, 5.0, -61.8437],
+      "lookAt": [-25.8248, 5.0, -61.1641],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-35.3393, 5.0, -54.3681],
+      "lookAt": [-38.7373, 5.0, -54.3681],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-48.2517, 5.0, -37.3781],
+      "lookAt": [-53.0089, 5.0, -36.0189],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-65.9213, 5.0, -23.1064],
+      "lookAt": [-67.9601, 5.0, -22.4268],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-81.5521, 5.0, -12.9124],
+      "lookAt": [-84.2705, 5.0, -11.5532],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-94.4646, 5.0, -3.398],
+      "lookAt": [-98.5422, 5.0, -1.3592],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-117.571, 5.0, -5.0],
+      "lookAt": [-119.6098, 5.0, -3.398],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    },
+    {
+      "position": [-127.765, 5.0, -12.9124],
+      "lookAt": [-129.8038, 5.0, -16.3104],
+      "speed": 2.0,
+      "pause": 1.5,
+      "easing": "Linear"
+    }
+  ]
+}

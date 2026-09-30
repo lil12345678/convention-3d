@@ -1,0 +1,68 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424; */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --vw: calc(100vw / 3840); /* 将屏幕宽度分为 5760 份 */
+  --vh: calc(100vh / 1080); /* 将屏幕高度分为 1634 份 */
+  -moz-user-select: none; /*火狐*//*选中文字时避免出现蓝色背景*/
+  -webkit-user-select: none; /*webkit浏览器*//*选中文字时避免出现蓝色背景*/
+  -ms-user-select: none; /*IE10*//*选中文字时避免出现蓝色背景*/
+  user-select: none;/*选中文字时避免出现蓝色背景*/
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 隐藏滚动条 */
+* {
+   scrollbar-width: none;
+}
+.element {
+  width: calc(100 * var(--vw)); /* 相当于设计稿中的 100px */
+  height: calc(200 * var(--vh));
+}
+html {
+  touch-action: manipulation;
+}
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+/* 针对按钮、链接、输入框等常见交互元素 */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+html,body {
+  margin: 0;
+  padding: 0;
+}
+
+
+
+
+#app {
+  max-width: 3840px;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+
+}
+
+
+

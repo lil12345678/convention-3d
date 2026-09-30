@@ -1,0 +1,148 @@
+
+/*********************
+  布局模式
+*********************/
+.flex{
+    display: flex;
+}
+.grid {
+  display: grid;
+}
+/*********************
+  Flex 方向与换行
+*********************/
+.flex-row {
+  flex-direction: row;
+}
+.flex-col {
+  flex-direction: column;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+
+
+
+
+/*********************
+  Flex 对齐方式
+*********************/
+/* 主轴对齐 */
+.justify-start {
+  justify-content: flex-start;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.between{
+    justify-content: space-between;
+}
+.around{
+    justify-content: space-around;
+}
+.justify-center{
+    justify-content: center; 
+}
+
+/* 交叉轴对齐 */
+.items-start {
+  align-items: flex-start;
+}
+.items-end {
+  align-items: flex-end;
+}
+.items-center {
+  align-items: center;
+}
+.items-baseline {
+  align-items: baseline;
+}
+.items-stretch {
+  align-items: stretch;
+}
+
+/*********************
+  Grid 布局
+*********************/
+/* 列模板 */
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* 间距 */
+.gap-10 {
+  gap: 10px;
+}
+.gap-20 {
+  gap: 20px;
+}
+.gap-30 {
+  gap: 30px;
+}
+
+/*********************
+  公共实用类
+*********************/
+/* 间距 */
+.mt-20 {
+  margin-top: 20px;
+}
+.mb-20 {
+  margin-bottom: 20px;
+}
+.p-20 {
+  padding: 20px;
+}
+
+/* 显示模式 */
+.block {
+  display: block;
+}
+.inline-block {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+
+/* 宽度 */
+.w-full {
+  width: 100%;
+}
+.w-50 {
+  width: 50%;
+}
+
+/* 高度 */
+.h-full {
+  height: 100%;
+}
+
+
+/* 文本对齐 */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+.relative{
+    position: relative;
+}
+.absolute{
+    position: absolute; 
+}
+.fixed{
+    position: fixed;
+}

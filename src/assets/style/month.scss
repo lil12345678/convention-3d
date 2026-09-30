@@ -1,0 +1,52 @@
+    .month-select {
+      width: 100%;
+      margin: 20px 0;
+      height: 30px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 24px;
+      font-family: DINAlternate;
+
+      .month-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        // padding: 10px 0;
+
+        /* 隐藏滚动条 */
+        &::-webkit-scrollbar {
+          display: block;
+        }
+
+        -ms-overflow-style: none;
+        scrollbar-width: 4;
+
+        .month {
+          flex: 0 0 auto;
+          // padding: 2px 4px;
+          width: 56px;
+          height: 28px;
+          line-height: 28px;
+          border-radius: 24px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.3s;
+          text-align: center;
+          color: #fff;
+
+          &.active {
+            background: linear-gradient(270deg,
+                rgba(0, 222, 255, 0.8) 0%,
+                #5dabff 50%,
+                rgba(0, 63, 150, 0.8) 100%);
+            color: #fff;
+          }
+
+          &:hover {
+            background: linear-gradient(270deg,
+                rgba(0, 222, 255, 0.8) 0%,
+                #5dabff 50%,
+                rgba(0, 63, 150, 0.8) 100%);
+          }
+        }
+      }
+    }

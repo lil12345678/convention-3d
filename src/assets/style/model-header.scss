@@ -1,0 +1,18 @@
+  .model-header {
+    text-align: center;
+    margin-bottom: 10px;
+    position: relative;
+    .model-img-title {
+      width: 60%;
+      height: auto;
+    }
+    .model-head-title {
+      position: absolute;
+      left: 51%;
+      top: 42%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      margin: 0;
+      font-family: HuXiaoBo;
+    }
+  }
