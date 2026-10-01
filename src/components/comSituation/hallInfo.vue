@@ -100,30 +100,55 @@
 import { ref, onMounted } from 'vue'
 
 import Empty from '@/components/commonVue/emptyData.vue'
+import { getCrowd, getExhibitions, getParking } from '@/utils/screenStats'
 
 const showYearOptions = ref(false)
-const selectedYear = ref(2025)
-const yearList = [2025, 2024, 2023, 2022, 2021, 2020]
-const activeMonth = ref(7) // 默认选中7月
+const selectedYear = ref(2026)
+const yearList = ref([2026, 2025])
+const activeMonth = ref(new Date().getMonth() + 1)
 
 const list = ref([])
-const adataList = ref([]) // 新增的列表数据
+const adataList = ref([])
 const num1 = ref('--')
 const num2 = ref('--')
 const num3 = ref('--')
+let exhibitions = []
 
-onMounted(() => {
-  // getNum()
-  // getData()
-  // getListData()
+onMounted(async () => {
+  const [rows, parking, crowd] = await Promise.all([getExhibitions(), getParking(), getCrowd()])
+  exhibitions = rows
+  yearList.value = [...new Set(rows.map((item) => item.year))].sort((a, b) => b - a)
+  if (yearList.value.length) selectedYear.value = yearList.value[0]
+  num1.value = parking.total_spaces
+  num2.value = parking.used_spaces
+  num3.value = parking.free_spaces
+  adataList.value = (crowd.items || []).map((item, index) => ({
+    sort: String(index + 1).padStart(2, '0'),
+    name: item.hall_name,
+    aa: '馆内',
+    unit: `${item.headcount}人`,
+    date2: '实时',
+  }))
+  applyList()
 })
 
 const selectMonth = (month) => {
   activeMonth.value = month
+  applyList()
 }
 const selectYear = (year) => {
   selectedYear.value = year
   showYearOptions.value = false
+  applyList()
+}
+const applyList = () => {
+  list.value = exhibitions
+    .filter((item) => item.year === selectedYear.value && item.month === activeMonth.value)
+    .map((item) => ({
+      name: `${item.name}（${item.hall_name}）`,
+      date: `${item.start_date} - ${item.end_date}`,
+      id: item.id,
+    }))
 }
 const getData = () => {
   list.value = [

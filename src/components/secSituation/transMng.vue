@@ -65,6 +65,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import * as echarts from 'echarts'
 
 import circleProgress from '../commonVue/circleProgress.vue'
+import { applyChart, getCrowd, getParking } from '@/utils/screenStats'
 
 const num2 = ref('--')
 const num3 = ref('--')
@@ -89,15 +90,27 @@ const progressOffset = computed(() => {
   }
 })
 onMounted(async () => {
-  // getPercent()
   await nextTick()
   if (chartRef5.value) {
     initChart()
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  const [parking, crowd] = await Promise.all([getParking(), getCrowd()])
+  percentage.value = parking.usage_rate
+  num2.value = parking.total_spaces
+  num3.value = parking.used_spaces
+  num4.value = parking.free_spaces
+  num5.value = parking.social_vehicles
+  num6.value = parking.logistics_vehicles
+  num7.value = parking.work_vehicles
+  pNum.value = crowd.total
+  applyChart(
+    myChart,
+    (crowd.items || []).map((item) => item.hall_name),
+    [(crowd.items || []).map((item) => item.headcount)],
+  )
 })
 const getPercent = () => {
   const data = 29.2918

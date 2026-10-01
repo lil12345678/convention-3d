@@ -26,20 +26,20 @@
             <div class="stat-item">
               <span class="dot normal"></span>
               <span class="label normal">一般</span>
-              <div class="value">-- 件</div>
-              <div class="percent">--</div>
+              <div class="value">{{ levelNormal }} 件</div>
+              <div class="percent">{{ levelNormalRate }}%</div>
             </div>
             <div class="stat-item">
               <span class="dot warning"></span>
               <span class="label warning">重要</span>
-              <div class="value">-- 件</div>
-              <div class="percent">--</div>
+              <div class="value">{{ levelImportant }} 件</div>
+              <div class="percent">{{ levelImportantRate }}%</div>
             </div>
             <div class="stat-item">
               <span class="dot danger"></span>
               <span class="label danger">严重</span>
-              <div class="value">-- 件</div>
-              <div class="percent">--</div>
+              <div class="value">{{ levelSevere }} 件</div>
+              <div class="percent">{{ levelSevereRate }}%</div>
             </div>
           </div>
         </div>
@@ -70,6 +70,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getAlarmView } from '@/utils/screenStats'
 
 const alarmchartRef1 = ref(null)
 let myChart = null
@@ -78,6 +79,13 @@ const num = ref('--') //告警数
 const upStatus = ref(false)
 const downStatus = ref(false)
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
+const levelNormal = ref(0)
+const levelImportant = ref(0)
+const levelSevere = ref(0)
+const levelNormalRate = ref(0)
+const levelImportantRate = ref(0)
+const levelSevereRate = ref(0)
+let alarmView = null
 
 onMounted(async () => {
   await nextTick()
@@ -86,28 +94,28 @@ onMounted(async () => {
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
-
-  // getTableData()
-  //
+  alarmView = await getAlarmView()
+  num.value = alarmView.total
+  const [normal, important, severe] = alarmView.levels
+  levelNormal.value = normal.count
+  levelImportant.value = important.count
+  levelSevere.value = severe.count
+  levelNormalRate.value = normal.percentage
+  levelImportantRate.value = important.percentage
+  levelSevereRate.value = severe.percentage
+  paintAlarm()
 })
 
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintAlarm()
 }
-const getChartData = () => {
-  chartData.value = [10, 80, 20, 50, 42, 13, 91, 19, 15]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
+const paintAlarm = () => {
+  if (!alarmView) return
+  const trend = activeTab.value === '月' ? alarmView.month : alarmView.day
+  chartData.value = trend.values
+  applyChart(myChart, trend.labels, [trend.values])
 }
 const initChart = () => {
   myChart = echarts.init(alarmchartRef1.value)

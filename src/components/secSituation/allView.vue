@@ -52,6 +52,7 @@
 import { ref, onMounted } from 'vue'
 
 import CirclePercentage from '@/components/commonVue/circlePercentage.vue'
+import { formatInt, getAlarmView, getDeviceView } from '@/utils/screenStats'
 
 const data = ref([
   { percentage: '--', color: '#40f0ff', type: 'normal', label: '在线' }, // 在线
@@ -69,9 +70,21 @@ const total = ref('--')
 const perText1 = ref('在线')
 const perText2 = ref('一般')
 const num1 = ref('--')
-onMounted(() => {
-  // getData()
-  // getRightdata()
+onMounted(async () => {
+  const [devices, alarms] = await Promise.all([getDeviceView(), getAlarmView()])
+  num1.value = formatInt(devices.security.length)
+  total.value = devices.security.length
+  data.value = devices.securityStatus
+  const colors = ['#17fcff', '#4a17ff', '#feb817', '#f33e3e']
+  const types = ['danger', 'warning', 'normal', 'best']
+  rightdata.value = alarms.levels.map((item, index) => ({
+    percentage: item.count,
+    color: colors[index],
+    type: types[index],
+    label: item.name,
+  }))
+  righttotal.value = alarms.total
+  perText2.value = alarms.levels[0]?.name || '一般'
 })
 const getData = () => {
   total.value = 100

@@ -46,7 +46,7 @@
             <span>{{ item.name }}</span>
             <span>{{ item.value }}</span>
             <span>{{ item.time }}</span>
-            <span>未处理</span>
+            <span>{{ item.status }}</span>
           </div>
           <Empty v-else />
         </div>
@@ -58,6 +58,7 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import Empty from '@/components/commonVue/emptyData.vue'
+import { applyChart, getWorkOrderView } from '@/utils/screenStats'
 
 const chartRef7 = ref(null)
 
@@ -65,31 +66,30 @@ let myChart = null
 const activeTab = ref('日')
 const topList = ref([])
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
+let orderView = null
 
 onMounted(async () => {
-  // getData()
   await nextTick()
   if (chartRef7.value) {
     initChart()
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  orderView = await getWorkOrderView()
+  topList.value = orderView.overdueTop
+  paintOrders()
 })
 
-const getData = () => {
-  topList.value = [
-    { rank: 'TOP', num: 1, name: '系统', value: 1, time: '20/04/2559', color: '#DD1D4E' },
-    { rank: 'TOP', num: 2, name: '系统', value: 1, time: '20/04/2559', color: '#FFAF28' },
-    { rank: 'TOP', num: 3, name: '系统', value: 1, time: '20/04/2559', color: '#00D0FF' },
-    { rank: 'TOP', num: 4, name: '系统', value: 1, time: '20/04/2559', color: '#AFFFCC' },
-    { rank: 'TOP', num: 5, name: '系统', value: 1, time: '20/04/2559', color: '#fff' },
-  ]
+const paintOrders = () => {
+  if (!orderView) return
+  const trend = activeTab.value === '月' ? orderView.month : orderView.day
+  chartData.value = trend.values
+  applyChart(myChart, trend.labels, [trend.values])
 }
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintOrders()
 }
 
 const initChart = () => {

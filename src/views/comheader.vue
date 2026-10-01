@@ -52,7 +52,7 @@
     <div class="header-right">
       <div class="warn-box">
         <img src="../assets/img/warn.png" alt="" class="img3" />
-        <div class="warn-num">告警<span>(1)</span></div>
+        <div class="warn-num">告警<span>({{ alarmCount }})</span></div>
       </div>
 
       <div>
@@ -69,6 +69,7 @@ import { useRouter } from 'vue-router'
 
 import { getDateWeek } from '@/utils/date.js'
 import { debounce } from '@/utils/commonFunc.js'
+import { getAlarmView } from '@/utils/screenStats'
 
 // import { getLocation } from '@/api/amap.js'
 const router = useRouter()
@@ -78,6 +79,7 @@ const data = reactive({
 })
 const { currentTime, location } = toRefs(data)
 const activeButton = ref('综合态势')
+const alarmCount = ref(0)
 const updateTime = () => {
   const now = new Date()
   const hours = String(now.getHours()).padStart(2, '0')
@@ -132,10 +134,11 @@ const gotoConvention = debounce(
   300,
   true
 )
-onMounted(() => {
+onMounted(async () => {
   updateTime()
   setInterval(updateTime, 1000)
-  // getLoc()
+  const alarms = await getAlarmView()
+  alarmCount.value = alarms.pending
 })
 
 // 组件卸载时清除定时器

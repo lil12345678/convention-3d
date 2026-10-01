@@ -94,6 +94,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import circleProgress from '../commonVue/circleProgress.vue'
+import { getAlarmView } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const upStatus = ref(false)
@@ -123,45 +124,46 @@ const progressData = ref([
   { label: '未处理', percentage: 1, value: '--', color: '#FFB800' },
 ])
 const activeTab = ref('月')
+let alarmView = null
 
-onMounted(() => {
-  // getPer()
-  // getData()
+onMounted(async () => {
+  alarmView = await getAlarmView()
+  paintAlarm()
 })
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getData()
+  paintAlarm()
 }
 
-const getData = () => {
-  num1.value = 10
-  upStatus.value = true
-  downStatus.value = false
-
-  const data = Math.round(12323.43)
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num2.value = formattedData
-
-  legentdata.value = [
-    { percentage: 10, value: 123, color: '#03a30e', type: 'normal', label: '在线' },
-    { percentage: 32, value: 563, color: '#ffb800', type: 'warning', label: '离线' },
-    { percentage: 51, value: 12356, color: '#ff4d4f', type: 'danger', label: '故障' },
-  ]
-}
-const getPer = () => {
-  const data = 29.2918
-  if (data > 100) {
-    percentage.value = 100
-  } else {
-    percentage.value = Math.round(data)
-  }
-  progressData.value = [
-    { label: '处理中', percentage: 70, value: 4675, color: '#00B4FF' },
-    { label: '已处理', percentage: 50, value: 4675, color: '#AFFFCC' },
-    { label: '未处理', percentage: 20, value: 4675, color: '#FFB800' },
-  ]
+const paintAlarm = () => {
+  if (!alarmView) return
+  const trend = alarmView[activeTab.value === '年' ? 'year' : activeTab.value === '日' ? 'day' : 'month']
+  const previous = trend.values[trend.values.length - 2] || 0
+  const current = trend.values[trend.values.length - 1] || 0
+  num1.value = previous ? Math.round(((current - previous) / previous) * 100) : 0
+  upStatus.value = num1.value >= 0
+  downStatus.value = num1.value < 0
+  num2.value = alarmView.total
+  const colors = ['#03a30e', '#ffb800', '#ff4d4f']
+  const types = ['normal', 'warning', 'danger']
+  legentdata.value = alarmView.levels.map((item, index) => ({
+    percentage: item.percentage,
+    value: item.count,
+    color: colors[index],
+    type: types[index],
+    label: item.name,
+  }))
+  percentage.value = alarmView.handledRate
+  const statusColors = ['#00B4FF', '#AFFFCC', '#FFB800']
+  progressData.value = ['处理中', '已处理', '未处理'].map((label, index) => {
+    const found = alarmView.statuses.find((item) => item.name === label)
+    return {
+      label,
+      percentage: found?.percentage || 0,
+      value: found?.count || 0,
+      color: statusColors[index],
+    }
+  })
 }
 </script>
 <style lang="scss" scoped>

@@ -31,7 +31,7 @@
             <div class="stat-item" v-for="(item, index) in rightdata" :key="index">
               <span class="dot" :class="item.type"></span>
               <span class="label" :class="item.type">{{ item.label }}</span>
-              <div class="value">{{ item.percentage }}</div>
+              <div class="value">{{ item.count }}</div>
               <div class="percent">
                 {{ item.percentage
                 }}<span v-if="!isNaN(item.percentage) && typeof item.percentage === 'number'"
@@ -49,6 +49,7 @@
 import { ref, onMounted } from 'vue'
 
 import CirclePercentage from '@/components/commonVue/circlePercentage.vue'
+import { getDeviceView } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const list = ref([
@@ -65,9 +66,12 @@ const rightdata = ref([
 ])
 const righttotal = ref('--')
 
-onMounted(() => {
-  // getData()
-  // getRightdata()
+onMounted(async () => {
+  const data = await getDeviceView()
+  num1.value = data.totalText
+  list.value = data.groups
+  righttotal.value = data.total
+  rightdata.value = data.status
 })
 
 const getData = () => {

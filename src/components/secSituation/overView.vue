@@ -6,7 +6,7 @@
         <div class="title">安防告警监测</div>
         <div class="stat-item1">
           <div class="span-text">{{ num1 }}</div>
-          <div class="span-text2">安防设备总数(个)</div>
+          <div class="span-text2">告警总数(件)</div>
           <img src="../../assets/img/up.png" alt="" class="up-icon" />
         </div>
 
@@ -21,8 +21,8 @@
                 color="#00B4FF"
               />
               <div class="value-box">
-                <span>4675件</span>
-                <span class="percentage">70%</span>
+                <span>{{ statusHandling }}件</span>
+                <span class="percentage">{{ percentage1 }}%</span>
               </div>
             </div>
           </div>
@@ -36,8 +36,8 @@
                 color="#AFFFCC"
               />
               <div class="value-box">
-                <span>4675件</span>
-                <span class="percentage">50%</span>
+                <span>{{ statusDone }}件</span>
+                <span class="percentage">{{ percentage2 }}%</span>
               </div>
             </div>
           </div>
@@ -51,8 +51,8 @@
                 color="#FFB800"
               />
               <div class="value-box">
-                <span>4675件</span>
-                <span class="percentage">20%</span>
+                <span>{{ statusPending }}件</span>
+                <span class="percentage">{{ percentage3 }}%</span>
               </div>
             </div>
           </div>
@@ -89,6 +89,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getAlarmView } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const percentage1 = ref(1)
@@ -99,23 +100,43 @@ const chartRef4 = ref(null)
 let myChart = null
 const activeTab = ref('日')
 const ChartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
+const statusHandling = ref(0)
+const statusDone = ref(0)
+const statusPending = ref(0)
+let alarmView = null
 
+const paintOverview = () => {
+  if (!alarmView) return
+  const key = activeTab.value === '年' ? 'year' : activeTab.value === '月' ? 'month' : 'day'
+  const trend = alarmView[key]
+  ChartData.value = trend.values
+  applyChart(myChart, trend.labels, [trend.values])
+}
 onMounted(async () => {
-  // getdata()
   await nextTick()
   if (chartRef4.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  alarmView = await getAlarmView()
+  num1.value = alarmView.total
+  const handling = alarmView.statuses.find((item) => item.name === '处理中')
+  const done = alarmView.statuses.find((item) => item.name === '已处理')
+  const pending = alarmView.statuses.find((item) => item.name === '未处理')
+  percentage1.value = handling?.percentage || 0
+  percentage2.value = done?.percentage || 0
+  percentage3.value = pending?.percentage || 0
+  statusHandling.value = handling?.count || 0
+  statusDone.value = done?.count || 0
+  statusPending.value = pending?.count || 0
+  paintOverview()
 })
 
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintOverview()
 }
 const getdata = () => {
   const data = 123590

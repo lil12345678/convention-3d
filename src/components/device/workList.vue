@@ -37,10 +37,10 @@
           <div class="table-body" v-if="list.length">
             <div class="record-item" v-for="(item, index) in list" :key="index">
               <span>{{ index + 1 }}</span>
-              <span>紧急</span>
-              <span>入侵告警</span>
-              <span>2024.11.21 14:22</span>
-              <span>未处理</span>
+              <span>{{ item.level }}</span>
+              <span>{{ item.order_type }}</span>
+              <span>{{ item.created_at }}</span>
+              <span>{{ item.status }}</span>
             </div>
           </div>
           <Empty v-else />
@@ -53,6 +53,7 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import Empty from '@/components/commonVue/emptyData.vue'
+import { applyChart, getWorkOrderView } from '@/utils/screenStats'
 
 const chartRef8 = ref(null)
 const chartData1 = ref([0, 0, 0, 0, 0, 0]) // 维修工单
@@ -62,13 +63,7 @@ const chartData4 = ref([0, 0, 0, 0, 0, 0]) // 其他
 const list = ref([])
 let myChart = null
 const activeTab = ref('日')
-const topList = [
-  { rank: 'TOP', num: 1, name: '系统', value: 1, time: '20/04/2559', color: '#DD1D4E' },
-  { rank: 'TOP', num: 2, name: '系统', value: 1, time: '20/04/2559', color: '#FFAF28' },
-  { rank: 'TOP', num: 3, name: '系统', value: 1, time: '20/04/2559', color: '#00D0FF' },
-  { rank: 'TOP', num: 4, name: '系统', value: 1, time: '20/04/2559', color: '#AFFFCC' },
-  { rank: 'TOP', num: 5, name: '系统', value: 1, time: '20/04/2559', color: '#fff' },
-]
+let orderView = null
 
 onMounted(async () => {
   await nextTick()
@@ -77,12 +72,23 @@ onMounted(async () => {
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  orderView = await getWorkOrderView()
+  list.value = orderView.orders.slice(0, 8)
+  paintOrders()
 })
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintOrders()
+}
+const paintOrders = () => {
+  if (!orderView) return
+  const series = activeTab.value === '月' ? orderView.typeMonth : orderView.typeDay
+  applyChart(
+    myChart,
+    series[0].labels,
+    series.map((item) => item.values),
+  )
 }
 
 const initChart = () => {

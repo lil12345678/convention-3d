@@ -78,6 +78,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyMap } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const num2 = ref('--')
@@ -113,59 +114,46 @@ const chartRef9 = ref(null)
 let myChart = null
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
 const activeTab = ref('日')
+let energyMap = null
 
+function rateRow(rate) {
+  return {
+    tNum: rate?.value ?? '--',
+    hNum: rate?.value ?? '--',
+    tupStatus: !!rate?.up,
+    tdownStatus: !!rate?.down,
+    hupStatus: !!rate?.up,
+    hdownStatus: !!rate?.down,
+  }
+}
+const paintPower = () => {
+  const card = energyMap?.电
+  if (!card) return
+  num1.value = card.yearText
+  num2.value = card.monthText
+  num3.value = card.dayText
+  list.value = [rateRow(card.yoy), rateRow(card.mom), rateRow(card.dayMom)]
+  const trend = activeTab.value === '月' ? card : null
+  if (activeTab.value === '月') {
+    applyChart(myChart, card.monthLabels, [card.monthValues])
+  } else {
+    applyChart(myChart, card.dayLabels, [card.dayValues])
+  }
+}
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef9.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  energyMap = await getEnergyMap()
+  paintPower()
 })
-const getNum = () => {
-  const data = 12320
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-
-  const data1 = 0
-  list.value = [
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: false,
-      hupStatus: false,
-      hdownStatus: false,
-    },
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: false,
-      hupStatus: false,
-      hdownStatus: false,
-    },
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: true,
-      hupStatus: true,
-      hdownStatus: false,
-    },
-  ]
-}
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintPower()
 }
 const initChart = () => {
   myChart = echarts.init(chartRef9.value)

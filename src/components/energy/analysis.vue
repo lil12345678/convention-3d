@@ -52,6 +52,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyMap, getExhibitions } from '@/utils/screenStats'
 
 const chartRef15 = ref(null)
 const chartRef18 = ref(null)
@@ -64,7 +65,34 @@ let myChart2 = null
 const activeTab2 = ref('电')
 const chartData3 = [0, 0, 0, 0, 0, 0]
 const chartData4 = [0, 0, 0, 0, 0, 0]
+let energyMap = null
+let exhibitions = []
 
+function monthCounts(card) {
+  return card.months.map(
+    (item) =>
+      exhibitions.filter(
+        (row) => `${row.year}-${String(row.month).padStart(2, '0')}` === item.period_key,
+      ).length,
+  )
+}
+function monthVisitors(card) {
+  return card.months.map((item) =>
+    exhibitions
+      .filter((row) => `${row.year}-${String(row.month).padStart(2, '0')}` === item.period_key)
+      .reduce((total, row) => total + row.visitors, 0),
+  )
+}
+const paintLeft = () => {
+  const card = energyMap?.[activeTab.value]
+  if (!card) return
+  applyChart(myChart1, card.monthLabels, [monthCounts(card), card.monthValues])
+}
+const paintRight = () => {
+  const card = energyMap?.[activeTab2.value]
+  if (!card) return
+  applyChart(myChart2, card.monthLabels, [monthVisitors(card), card.monthValues])
+}
 onMounted(async () => {
   await nextTick()
   if (chartRef15.value) {
@@ -72,24 +100,25 @@ onMounted(async () => {
     window.addEventListener('resize', () => {
       myChart1 && myChart1.resize()
     })
-    // updateChartData()
   }
   if (chartRef18.value) {
     initChart18()
     window.addEventListener('resize', () => {
       myChart2 && myChart2.resize()
     })
-    // updateChartData2()
   }
+  ;[exhibitions, energyMap] = await Promise.all([getExhibitions(), getEnergyMap()])
+  paintLeft()
+  paintRight()
 })
 
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  updateChartData()
+  paintLeft()
 }
 const handleTabClick2 = (tab) => {
   activeTab2.value = tab
-  updateChartData2()
+  paintRight()
 }
 const initChart15 = () => {
   myChart1 = echarts.init(chartRef15.value)

@@ -44,6 +44,7 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import Empty from '@/components/commonVue/emptyData.vue'
+import { applyChart, getCrowd, getExhibitionEvents, getExhibitions } from '@/utils/screenStats'
 
 const chartRef20 = ref(null)
 const chartRef21 = ref(null)
@@ -72,22 +73,40 @@ const chartData5 = ref([
 // 表格数据
 const tableData = ref([])
 onMounted(async () => {
+  const [events, exhibitions, crowd] = await Promise.all([
+    getExhibitionEvents(),
+    getExhibitions(),
+    getCrowd(),
+  ])
+  tableData.value = events.slice(0, 8).map((item, index) => ({
+    id: String(index + 1).padStart(2, '0'),
+    code: item.title,
+    type: item.hall_name,
+    status: item.event_type,
+    time: item.start_time,
+  }))
+  const halls = (crowd.items || []).map((item) => item.hall_name)
+  chartData1.value = (crowd.items || []).map((item) => item.headcount)
+  const hallCount = {}
+  exhibitions.forEach((item) => {
+    hallCount[item.hall_name] = (hallCount[item.hall_name] || 0) + 1
+  })
+  chartData5.value = Object.entries(hallCount).map(([name, value]) => ({ name, value }))
   await nextTick()
   if (chartRef20.value) {
     initChart()
+    applyChart(myChart, halls, [chartData1.value])
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData1()
   }
   if (chartRef21.value) {
     initChart2()
+    myChart2.setOption({ series: [{ data: chartData5.value }] })
     window.addEventListener('resize', () => {
       myChart2 && myChart2.resize()
     })
-    // getChartData2()
   }
-  // getTableData()
 })
 
 const getTableData = () => {

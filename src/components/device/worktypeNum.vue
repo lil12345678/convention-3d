@@ -60,6 +60,7 @@
 import { ref, computed, onMounted } from 'vue'
 import circleProgress from '../commonVue/circleProgress.vue'
 import CirclePercentage from '@/components/commonVue/circlePercentage.vue'
+import { getWorkOrderView } from '@/utils/screenStats'
 
 const percentage = ref('--')
 const progresstitle = ref('工单完成率')
@@ -89,9 +90,26 @@ const rightdata = ref([
   { percentage: '--', color: '#cd17ff', type: 'five', label: '咨询工单' }, // 特急
 ])
 const righttotal = ref('--')
-onMounted(() => {
-  // getData()
-  // getRightdata()
+onMounted(async () => {
+  const data = await getWorkOrderView()
+  percentage.value = data.completion
+  num1.value = data.today
+  num2.value = data.total
+  list.value = [
+    { label: '待处理', value: data.statuses[0].count },
+    { label: '处理中', value: data.statuses[1].count },
+    { label: '已处理', value: data.statuses[2].count },
+    { label: '已超期', value: data.overdue },
+  ]
+  const colors = ['#17fcff', '#4a17ff', '#feb817', '#f33e3e', '#cd17ff']
+  const types = ['danger', 'warning', 'normal', 'best', 'five']
+  rightdata.value = data.types.map((item, index) => ({
+    percentage: item.percentage,
+    color: colors[index],
+    type: types[index],
+    label: item.name,
+  }))
+  righttotal.value = data.total
 })
 const getData = () => {
   percentage.value = 80

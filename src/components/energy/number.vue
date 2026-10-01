@@ -57,6 +57,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, formatInt, getEnergyMap } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const num2 = ref('--')
@@ -68,24 +69,43 @@ const chartRef17 = ref(null)
 let myChart = null
 const chartData = ref([0, 0, 0, 0, 0, 0])
 const showYearOptions = ref(false)
-const selectedYear = ref(2024)
-const yearList = [2024, 2023, 2022, 2021, 2020]
+const selectedYear = ref(new Date().getFullYear())
+const yearList = ref([new Date().getFullYear()])
+let energyMap = null
+const paintNumber = () => {
+  const months = (energyMap?.电.months || []).filter((item) =>
+    item.period_key.startsWith(String(selectedYear.value)),
+  )
+  const kwh = months.reduce((total, item) => total + item.value, 0)
+  num1.value = formatInt((kwh * 0.1229) / 1000)
+  num2.value = formatInt((kwh * 0.5703) / 1000)
+  num3.value = formatInt(kwh ? kwh / 10000 : 0)
+  num4.value = formatInt(kwh * 0.1229)
+  applyChart(
+    myChart,
+    months.map((item) => `${Number(item.period_key.slice(5))}月`),
+    [months.map((item) => Number(((item.value * 0.5703) / 1000).toFixed(2)))],
+  )
+}
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef17.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  energyMap = await getEnergyMap()
+  yearList.value = [
+    ...new Set((energyMap.电.months || []).map((item) => Number(item.period_key.slice(0, 4)))),
+  ].sort((a, b) => b - a)
+  if (yearList.value.length) selectedYear.value = yearList.value[0]
+  paintNumber()
 })
 const selectYear = (year) => {
   selectedYear.value = year
   showYearOptions.value = false
-  getNum()
+  paintNumber()
 }
 const getNum = () => {
   const data = 35678

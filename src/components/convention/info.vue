@@ -89,22 +89,51 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Empty from '@/components/commonVue/emptyData.vue'
+import { getExhibitionEvents, getExhibitions } from '@/utils/screenStats'
 
 const src = ref(null)
 const title = ref('暂无数据')
 const date = ref('--')
 const btn = ref('暂无场馆')
-const activeMonth = ref(7) // 默认选中7月
+const activeMonth = ref(new Date().getMonth() + 1)
 const list = ref([])
 const timelineData = ref([])
+let exhibitions = []
+let events = []
+
+const applyMonth = () => {
+  const year = new Date().getFullYear()
+  const rows = exhibitions.filter((item) => item.year === year && item.month === activeMonth.value)
+  list.value = rows.map((item) => ({
+    name: `${item.name}（${item.hall_name}）`,
+    date: `${item.start_date} - ${item.end_date}`,
+  }))
+  const current = rows[0] || exhibitions.find((item) => item.status === '进行中')
+  if (current) {
+    title.value = current.name
+    date.value = `${current.start_date} - ${current.end_date}`
+    btn.value = current.hall_name
+  }
+  const ids = new Set(rows.map((item) => item.id))
+  timelineData.value = events
+    .filter((item) => !rows.length || ids.has(item.exhibition_id))
+    .map((item) => ({
+      type: item.event_type,
+      time: item.start_time,
+      title: item.title,
+      location: item.location,
+      room: item.room,
+      date: item.hall_name,
+    }))
+}
 const selectMonth = (month) => {
   activeMonth.value = month
+  applyMonth()
 }
 
-onMounted(() => {
-  // gettop()
-  // getData()
-  // getTimelineData()
+onMounted(async () => {
+  ;[exhibitions, events] = await Promise.all([getExhibitions(), getExhibitionEvents()])
+  applyMonth()
 })
 const gettop = () => {
   src.value = 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg'

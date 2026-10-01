@@ -52,6 +52,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, countBuckets, filterBySource, getWorkOrderView } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const list = ref([
@@ -65,29 +66,31 @@ const chartRef13 = ref(null)
 let myChart = null
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0]) // 示例数据CONST
 const activeTab = ref('日')
+let energyOrders = []
+const paintEnergyOrders = () => {
+  const trend = countBuckets(energyOrders, 'created_at', activeTab.value)
+  applyChart(myChart, trend.labels, [trend.values])
+}
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef13.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    getChartData()
   }
+  const data = await getWorkOrderView()
+  energyOrders = filterBySource(data.orders, '能源')
+  num1.value = energyOrders.length
+  list.value = ['未处理', '处理中', '已处理'].map((label) => ({
+    label,
+    val: energyOrders.filter((item) => item.status === (label === '未处理' ? '待处理' : label)).length,
+  }))
+  paintEnergyOrders()
 })
-const getNum = () => {
-  num1.value = 100
-  list.value = [
-    { label: '未处理', val: 10 },
-    { label: '处理中', val: 20 },
-    { label: '已处理', val: 70 },
-  ]
-}
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintEnergyOrders()
 }
 
 const initChart = () => {

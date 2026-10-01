@@ -28,7 +28,7 @@
             <div class="card">
               <img src="../../assets/img/c5.png" alt="" class="img" />
               <div class="value">{{ num4 }}<span>人</span></div>
-              <div class="label">应急场所</div>
+              <div class="label">应急车辆</div>
             </div>
             <div class="card">
               <img src="../../assets/img/c4.png" alt="" class="img" />
@@ -64,6 +64,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEmergencyView } from '@/utils/screenStats'
 
 const num1 = ref('--') //应急预案数
 const num2 = ref('--') //应急队伍
@@ -83,15 +84,25 @@ const handleTabClick = (tab) => {
   activeTab.value = tab
 }
 onMounted(async () => {
-  // getData()
   await nextTick()
   if (chartRef6.value) {
     initChart()
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  const data = await getEmergencyView()
+  num1.value = data.overview['应急预案'] ?? '--'
+  num2.value = data.overview['应急队伍'] ?? '--'
+  num3.value = data.overview['应急仓库'] ?? '--'
+  num4.value = data.overview['应急车辆'] ?? '--'
+  num5.value = data.overview['应急物资'] ?? '--'
+  chartData1.value = data.series[0]
+  chartData2.value = data.series[1]
+  chartData3.value = data.series[2]
+  chartData4.value = data.series[3]
+  chartData5.value = data.series[4]
+  applyChart(myChart, data.labels, data.series)
 })
 const getData = () => {
   num1.value = 10

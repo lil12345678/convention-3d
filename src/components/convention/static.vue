@@ -16,36 +16,36 @@
           </div>
           <div class="card">
             <img src="../../assets/img/c5.png" alt="" class="img" />
-            <div class="value">{{ num2 }}<span>m²</span></div>
-            <div class="label">标摊面积</div>
+            <div class="value">{{ num2 }}<span>个</span></div>
+            <div class="label">展馆数量</div>
           </div>
           <div class="card">
             <img src="../../assets/img/c6.png" alt="" class="img" />
-            <div class="value">{{ num3 }}<span>m²</span></div>
-            <div class="label">特装面积</div>
+            <div class="value">{{ num3 }}<span>个</span></div>
+            <div class="label">登录厅数量</div>
           </div>
         </div>
         <div class="energy-cards">
           <div class="card">
             <img src="../../assets/img/c4.png" alt="" class="img" />
-            <div class="value">{{ num4 }}<span>家</span></div>
-            <div class="label">参展商家</div>
+            <div class="value">{{ num4 }}<span>场</span></div>
+            <div class="label">展会场次</div>
           </div>
           <div class="card">
             <img src="../../assets/img/c5.png" alt="" class="img" />
             <div class="value">{{ num5 }}<span>人</span></div>
-            <div class="label">专业观众</div>
+            <div class="label">参展人次</div>
           </div>
           <div class="card">
             <img src="../../assets/img/c6.png" alt="" class="img" />
             <div class="value">{{ num6 }}<span>人</span></div>
-            <div class="label">普通观众</div>
+            <div class="label">在馆人数</div>
           </div>
         </div>
       </div>
       <div class="right">
         <div class="chart-header">
-          <div class="title">展会满意度</div>
+          <div class="title">展会状态</div>
           <div class="flex items-center between circle-box">
             <circleProgress
               :percentage="percentage1"
@@ -72,6 +72,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import circleProgress from '../commonVue/circleProgress.vue'
+import { formatInt, getCrowd, getExhibitions, getHalls, percent } from '@/utils/screenStats'
 const num1 = ref('--') //
 const num2 = ref('--') //
 const num3 = ref('--') //
@@ -79,8 +80,8 @@ const num4 = ref('--') //
 const num5 = ref('--') //
 const num6 = ref('--') //
 
-const progresstitle1 = ref('观众满意度')
-const progresstitle2 = ref('展商满意度')
+const progresstitle1 = ref('进行中占比')
+const progresstitle2 = ref('已结束占比')
 const percentage1 = ref('--')
 const percentage2 = ref('--')
 const circumference = 2 * Math.PI * 45
@@ -100,10 +101,17 @@ const progressOffset2 = computed(() => {
     return circumference * (1 - 0 / 100)
   }
 })
-onMounted(() => {
-  // getNum()
-  // getPercent1()
-  // getPercent2()
+onMounted(async () => {
+  const [halls, exhibitions, crowd] = await Promise.all([getHalls(), getExhibitions(), getCrowd()])
+  const area = halls.reduce((total, item) => total + Number(item.area_sqm || 0), 0)
+  num1.value = formatInt(area)
+  num2.value = halls.filter((item) => item.hall_type === '展馆').length
+  num3.value = halls.filter((item) => item.hall_type === '登录厅').length
+  num4.value = exhibitions.length
+  num5.value = formatInt(exhibitions.reduce((total, item) => total + item.visitors, 0))
+  num6.value = formatInt(crowd.total)
+  percentage1.value = percent(exhibitions.filter((item) => item.status === '进行中').length, exhibitions.length)
+  percentage2.value = percent(exhibitions.filter((item) => item.status === '已结束').length, exhibitions.length)
 })
 const getNum = () => {
   const data = 1234

@@ -47,6 +47,7 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import CirclePercentage from '@/components/commonVue/circlePercentage.vue'
+import { applyChart, getAlarmView } from '@/utils/screenStats'
 const chartRef16 = ref(null)
 
 let myChart = null
@@ -62,9 +63,9 @@ const rightdata = ref([
   { percentage: '--', color: '#3F55D3', type: 'five', label: '给排数工程' }, // 特急
 ])
 const total = ref(null)
+let alarmView = null
 
 onMounted(async () => {
-  // getData()
   await nextTick()
   if (chartRef16.value) {
     initChart()
@@ -72,22 +73,30 @@ onMounted(async () => {
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  alarmView = await getAlarmView()
+  const colors = ['#40F0FF', '#807E6F', '#3FD385', '#3F55D3', '#feb817']
+  const types = ['one', 'two', 'three', 'four', 'five']
+  rightdata.value = alarmView.byType.map((item, index) => ({
+    percentage: item.percentage,
+    color: colors[index % colors.length],
+    type: types[index % types.length],
+    label: item.name,
+  }))
+  total.value = alarmView.total
+  text.value = alarmView.byType[0]?.name || '告警'
+  per.value = `${alarmView.byType[0]?.percentage || 0}%`
+  paintAlarm()
 })
-const getData = () => {
-  per.value = '100%'
-  rightdata.value = [
-    { percentage: 10, color: '#40F0FF', type: 'one', label: '弱电工程' }, // 一般
-    { percentage: 20, color: '#807E6F', type: 'two', label: '消防工程' }, // 较急
-    { percentage: 30, color: '#807E6F', type: 'three', label: '暖通工程' }, // 紧急
-    { percentage: 40, color: '#3FD385', type: 'four', label: '电气工程' }, // 特急
-    { percentage: 0, color: '#3F55D3', type: 'five', label: '给排数工程' }, // 特急
-  ]
+const paintAlarm = () => {
+  if (!alarmView) return
+  const trend = activeTab.value === '月' ? alarmView.month : alarmView.day
+  chartData.value = trend.values
+  applyChart(myChart, trend.labels, [trend.values])
 }
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintAlarm()
 }
 
 const initChart = () => {

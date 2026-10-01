@@ -63,6 +63,7 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import circleProgress from '../commonVue/circleProgress.vue'
+import { applyChart, getWorkOrderView } from '@/utils/screenStats'
 
 const percentage = ref('--')
 const progresstitle = ref('工单完成率')
@@ -87,7 +88,6 @@ const chartRef3 = ref(null)
 let myChart = null
 
 onMounted(async () => {
-  // getPercent()
   await nextTick()
   if (chartRef3.value) {
     initChart()
@@ -95,8 +95,15 @@ onMounted(async () => {
       myChart && myChart.resize()
     })
   }
-
-  // getChartData()
+  const data = await getWorkOrderView()
+  percentage.value = data.completion
+  num1.value = data.today
+  num2.value = data.total
+  statusNum1.value = data.statuses[0].count
+  statusNum2.value = data.statuses[1].count
+  statusNum3.value = data.statuses[2].count
+  statusNum4.value = data.overdue
+  applyChart(myChart, data.month.labels, [data.month.values])
 })
 const getPercent = () => {
   const data = 29.2918

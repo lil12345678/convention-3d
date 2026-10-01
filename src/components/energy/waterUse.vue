@@ -12,18 +12,18 @@
         <div class="energy-cards">
           <div class="card">
             <img src="../../assets/img/c4.png" alt="" class="img" />
-            <div class="value">{{ num1 }}<span>kW/h</span></div>
-            <div class="label">本年用电量</div>
+            <div class="value">{{ num1 }}<span>m³</span></div>
+            <div class="label">本年用水量</div>
           </div>
           <div class="card">
             <img src="../../assets/img/c5.png" alt="" class="img" />
-            <div class="value">{{ num2 }}<span>kW/h</span></div>
-            <div class="label">本月用电量</div>
+            <div class="value">{{ num2 }}<span>m³</span></div>
+            <div class="label">本月用水量</div>
           </div>
           <div class="card">
             <img src="../../assets/img/c6.png" alt="" class="img" />
-            <div class="value">{{ num3 }}<span>kW/h</span></div>
-            <div class="label">本日用电量</div>
+            <div class="value">{{ num3 }}<span>m³</span></div>
+            <div class="label">本日用水量</div>
           </div>
         </div>
         <div class="grid-box">
@@ -79,6 +79,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyMap } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const num2 = ref('--')
@@ -114,59 +115,45 @@ const chartRef11 = ref(null)
 let myChart = null
 const activeTab = ref('日')
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
+let energyMap = null
 
+function rateRow(rate) {
+  return {
+    tNum: rate?.value ?? '--',
+    hNum: rate?.value ?? '--',
+    tupStatus: !!rate?.up,
+    tdownStatus: !!rate?.down,
+    hupStatus: !!rate?.up,
+    hdownStatus: !!rate?.down,
+  }
+}
+const paintWater = () => {
+  const card = energyMap?.水
+  if (!card) return
+  num1.value = card.yearText
+  num2.value = card.monthText
+  num3.value = card.dayText
+  list.value = [rateRow(card.yoy), rateRow(card.mom), rateRow(card.dayMom)]
+  if (activeTab.value === '月') {
+    applyChart(myChart, card.monthLabels, [card.monthValues])
+  } else {
+    applyChart(myChart, card.dayLabels, [card.dayValues])
+  }
+}
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef11.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  energyMap = await getEnergyMap()
+  paintWater()
 })
-const getNum = () => {
-  const data = 12320
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-
-  const data1 = 0
-  list.value = [
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: false,
-      hupStatus: false,
-      hdownStatus: false,
-    },
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: false,
-      hupStatus: false,
-      hdownStatus: false,
-    },
-    {
-      tNum: data1,
-      hNum: data1,
-      tupStatus: false,
-      tdownStatus: true,
-      hupStatus: true,
-      hdownStatus: false,
-    },
-  ]
-}
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintWater()
 }
 const initChart = () => {
   myChart = echarts.init(chartRef11.value)

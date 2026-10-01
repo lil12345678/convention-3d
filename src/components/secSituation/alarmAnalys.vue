@@ -58,6 +58,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import Empty from '@/components/commonVue/emptyData.vue'
+import { getAlarmView } from '@/utils/screenStats'
 
 const alarmList = ref([
   { rank: 'TOP', num: 1, name: 'AI视频告警', value: '--', percentage: 1, color: '#DD1D4E' },
@@ -68,9 +69,24 @@ const alarmList = ref([
 ])
 
 const list = ref([])
-onMounted(() => {
-  // getPer()
-  // getData()
+onMounted(async () => {
+  const data = await getAlarmView()
+  const colors = ['#DD1D4E', '#FFAF28', '#00D0FF', '#AFFFCC', '#fff']
+  alarmList.value = data.byType.slice(0, 5).map((item, index) => ({
+    rank: 'TOP',
+    num: index + 1,
+    name: item.name,
+    value: item.count,
+    percentage: item.percentage,
+    color: colors[index],
+  }))
+  list.value = data.alarms.slice(0, 8).map((item, index) => ({
+    sort: String(index + 1).padStart(2, '0'),
+    level: item.alarm_level,
+    type: item.alarm_type,
+    time: item.alarm_time,
+    status: item.alarm_status,
+  }))
 })
 
 const getPer = () => {

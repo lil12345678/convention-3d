@@ -70,6 +70,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyAlarmView } from '@/utils/screenStats'
 
 const num1 = ref('--')
 const num2 = ref('--')
@@ -78,38 +79,39 @@ let myChart = null
 const activeTab = ref('日')
 const chartData = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
 const alarmList = ref([
-  { num: 1, name: '供电告警', value: '--', percentage: 0, color: '#8BE7FF' },
-  { num: 2, name: '供水告警', value: '--', percentage: 0, color: '#BEFF8B' },
+  { num: 1, name: '一般', value: '--', percentage: 0, color: '#8BE7FF' },
+  { num: 2, name: '重要', value: '--', percentage: 0, color: '#BEFF8B' },
 ])
+let alarmView = null
 
+const paintAlarm = () => {
+  if (!alarmView) return
+  num1.value = alarmView.electric
+  num2.value = alarmView.water
+  alarmList.value = alarmView.levels.map((item, index) => ({
+    num: index + 1,
+    name: item.name,
+    value: item.percentage,
+    percentage: item.percentage,
+    color: item.color,
+  }))
+  const trend = activeTab.value === '月' ? alarmView.month : alarmView.day
+  applyChart(myChart, trend.labels, [trend.values])
+}
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef19.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  alarmView = await getEnergyAlarmView()
+  paintAlarm()
 })
-const getNum = () => {
-  const data = 12320
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-
-  alarmList.value = [
-    { num: 1, name: '供电告警', value: 4675, percentage: 70, color: '#8BE7FF' },
-    { num: 2, name: '供水告警', value: 4675, percentage: 50, color: '#BEFF8B' },
-  ]
-}
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintAlarm()
 }
 const initChart = () => {
   myChart = echarts.init(chartRef19.value)

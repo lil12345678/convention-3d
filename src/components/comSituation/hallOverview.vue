@@ -18,12 +18,12 @@
           />
 
           <div>
-            <li><span>A馆</span><span class="font-Fam"> -- / --</span></li>
-            <li><span>B馆</span><span class="font-Fam"> -- / --</span></li>
+            <li><span>展馆</span><span class="font-Fam"> {{ exhibitText }}</span></li>
+            <li><span>登录厅</span><span class="font-Fam"> {{ loginText }}</span></li>
           </div>
         </div>
         <div class="ratio-item">
-          <div class="ratio-title">会议室使用率</div>
+          <div class="ratio-title">展会进行率</div>
           <circleProgress
             :percentage="percentage2"
             :title="progresstitle2"
@@ -32,9 +32,9 @@
             :imgFlag="'blue'"
           />
           <div>
-            <li><span>小会议室</span><span class="font-Fam"> -- / --</span></li>
-            <li><span>中会议室</span><span class="font-Fam"> -- / --</span></li>
-            <li><span>大会议室</span><span class="font-Fam"> -- / --</span></li>
+            <li><span>进行中</span><span class="font-Fam"> {{ ongoing }}</span></li>
+            <li><span>已结束</span><span class="font-Fam"> {{ finished }}</span></li>
+            <li><span>未开始</span><span class="font-Fam"> {{ upcoming }}</span></li>
           </div>
         </div>
       </div>
@@ -117,6 +117,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import circleProgress from '../commonVue/circleProgress.vue'
+import { getHallOverview } from '@/utils/screenStats'
 
 const percentage1 = ref('--')
 const progresstitle1 = ref(null)
@@ -148,11 +149,29 @@ const hNum = ref('--')
 const tNum = ref('--')
 const upStatus = ref(false)
 const downStatus = ref(false)
+const exhibitText = ref('--')
+const loginText = ref('--')
+const ongoing = ref('--')
+const finished = ref('--')
+const upcoming = ref('--')
 
-onMounted(() => {
-  // getPercent1()
-  // getPercent2()
-  // getNum()
+onMounted(async () => {
+  const data = await getHallOverview()
+  percentage1.value = data.areaRate
+  percentage2.value = data.meetingRate
+  exhibitText.value = data.exhibitText
+  loginText.value = data.loginText
+  ongoing.value = data.ongoing
+  finished.value = data.finished
+  upcoming.value = data.upcoming
+  num1.value = data.totalCount
+  num2.value = data.yearCount
+  num3.value = data.totalVisitors
+  num4.value = data.yearVisitors
+  tNum.value = data.countRate.value
+  hNum.value = data.visitorRate.value
+  upStatus.value = data.countRate.up || data.visitorRate.up
+  downStatus.value = data.countRate.down || data.visitorRate.down
 })
 
 const getPercent1 = () => {

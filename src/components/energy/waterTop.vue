@@ -51,6 +51,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyMap } from '@/utils/screenStats'
 
 const chartRef12 = ref(null)
 
@@ -58,29 +59,45 @@ let myChart = null
 const activeTab = ref('日')
 const chartData = ref([0, 0, 0, 0, 0, 0])
 
-const alarmList = ref([
-  { rank: 'TOP', num: 1, name: 'AI视频告警', value: '--', percentage: 1, color: '#DD1D4E' },
-  { rank: 'TOP', num: 2, name: '入侵告警', value: '--', percentage: 1, color: '#FFAF28' },
-  { rank: 'TOP', num: 3, name: '消防告警', value: '--', percentage: 1, color: '#00D0FF' },
-  { rank: 'TOP', num: 4, name: '消防告警', value: '--', percentage: 1, color: '#AFFFCC' },
-  { rank: 'TOP', num: 5, name: '消防告警', value: '--', percentage: 1, color: '#fff' },
-])
-
+const alarmList = ref([])
+let energyMap = null
+const paintWaterTop = () => {
+  const card = energyMap?.水
+  if (!card) return
+  if (activeTab.value === '月') {
+    applyChart(myChart, card.monthLabels, [card.monthValues])
+  } else {
+    applyChart(myChart, card.dayLabels, [card.dayValues])
+  }
+  const ranked = card.months
+    .slice()
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
+  const max = ranked[0]?.value || 1
+  const colors = ['#DD1D4E', '#FFAF28', '#00D0FF', '#AFFFCC', '#fff']
+  alarmList.value = ranked.map((item, index) => ({
+    rank: 'TOP',
+    num: index + 1,
+    name: item.period_key,
+    value: Math.round(item.value),
+    percentage: Math.round((item.value / max) * 100),
+    color: colors[index],
+  }))
+}
 onMounted(async () => {
-  // getList()
   await nextTick()
   if (chartRef12.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  energyMap = await getEnergyMap()
+  paintWaterTop()
 })
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getChartData()
+  paintWaterTop()
 }
 
 const initChart = () => {

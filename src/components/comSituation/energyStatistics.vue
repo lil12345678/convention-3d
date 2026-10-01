@@ -115,6 +115,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { applyChart, getEnergyMap } from '@/utils/screenStats'
 
 const chartRef2 = ref(null)
 let myChart = null
@@ -128,17 +129,17 @@ const tNum = ref('--')
 const hNum = ref('--')
 const upStatus = ref(false)
 const downStatus = ref(false)
+let energyMap = null
 
 const handleTabClick = (tab) => {
   activeTab.value = tab
-  getNum()
+  paintCards()
 }
 const handleTabClick2 = (tab) => {
   activeTab2.value = tab
-  getEchartData()
+  paintTrend()
 }
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef2.value) {
     initChart()
@@ -146,20 +147,26 @@ onMounted(async () => {
       myChart && myChart.resize()
     })
   }
-  // getEchartData()
+  energyMap = await getEnergyMap()
+  paintCards()
+  paintTrend()
 })
-const getNum = () => {
-  const data = 1290
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-  tNum.value = 20
-  hNum.value = 30
-  upStatus.value = true
-  downStatus.value = false
+const paintCards = () => {
+  const card = energyMap?.[activeTab.value]
+  if (!card) return
+  num1.value = card.yearText
+  num2.value = card.monthText
+  num3.value = card.dayText
+  tNum.value = card.yoy.value
+  hNum.value = card.mom.value
+  upStatus.value = card.mom.up
+  downStatus.value = card.mom.down
+}
+const paintTrend = () => {
+  const card = energyMap?.[activeTab2.value]
+  if (!card) return
+  ChartData.value = card.monthValues
+  applyChart(myChart, card.monthLabels, [card.monthValues])
 }
 const initChart = () => {
   myChart = echarts.init(chartRef2.value)

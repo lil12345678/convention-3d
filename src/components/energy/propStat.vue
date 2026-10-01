@@ -4,7 +4,7 @@
     <div class="content">
       <div class="left">
         <div class="chart-header">
-          <div class="title">分区域用电量统计(kWh)</div>
+          <div class="title">用电量趋势(kWh)</div>
           <div class="tabs">
             <div class="tab-box">
               <span
@@ -25,7 +25,7 @@
       <div class="right">
         <div class="title">分项用电占比</div>
         <div class="flex-box flex around items-center">
-          <CirclePercentage :data="rightdata" :total="righttotal" :text="'空调系统'" />
+          <CirclePercentage :data="rightdata" :total="righttotal" :text="'用电'" />
           <div class="statistics">
             <div class="stat-item" v-for="(item, index) in rightdata" :key="index">
               <span class="dot" :class="item.type"></span>
@@ -45,6 +45,7 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import CirclePercentage from '@/components/commonVue/circlePercentage.vue'
+import { applyChart, getEnergyMap, percent } from '@/utils/screenStats'
 const chartRef10 = ref(null)
 
 let myChart = null
@@ -58,21 +59,38 @@ const rightdata = ref([
   { percentage: '--', color: '#3F55D3', type: 'five', label: '给排水系统' }, // 特急
 ])
 const righttotal = ref('--')
+let energyMap = null
+const paintProp = () => {
+  const power = energyMap?.电
+  const water = energyMap?.水
+  if (!power || !water) return
+  if (activeTab.value === '月') {
+    applyChart(myChart, power.monthLabels, [power.monthValues])
+  } else {
+    applyChart(myChart, power.dayLabels, [power.dayValues])
+  }
+  const total = power.monthSum + water.monthSum
+  rightdata.value = [
+    { percentage: percent(power.monthSum, total), color: '#40F0FF', type: 'one', label: '用电' },
+    { percentage: percent(water.monthSum, total), color: '#3FD385', type: 'four', label: '用水' },
+  ]
+  righttotal.value = Math.round(total)
+}
 const handleTabClick = (tab) => {
   activeTab.value = tab
+  paintProp()
 }
 
 onMounted(async () => {
-  // getNum()
   await nextTick()
   if (chartRef10.value) {
     initChart()
-
     window.addEventListener('resize', () => {
       myChart && myChart.resize()
     })
-    // getChartData()
   }
+  energyMap = await getEnergyMap()
+  paintProp()
 })
 const getNum = () => {
   righttotal.value = 10
