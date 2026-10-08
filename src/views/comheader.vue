@@ -55,6 +55,11 @@
         <div class="warn-num">告警<span>({{ alarmCount }})</span></div>
       </div>
 
+      <div class="user-box" v-if="auth.isAuthenticated">
+        <div class="user-name">{{ auth.username || '已登录' }}</div>
+        <button class="logout-btn" type="button" @click="onLogout">退出</button>
+      </div>
+
       <div>
         <div class="time">{{ currentTime }}</div>
         <div class="date">{{ getDateWeek() }}</div>
@@ -70,9 +75,11 @@ import { useRouter } from 'vue-router'
 import { getDateWeek } from '@/utils/date.js'
 import { debounce } from '@/utils/commonFunc.js'
 import { getAlarmView } from '@/utils/screenStats'
+import { useAuthStore } from '@/store/modules/auth'
 
 // import { getLocation } from '@/api/amap.js'
 const router = useRouter()
+const auth = useAuthStore()
 const data = reactive({
   currentTime: '',
   location: '定位中……',
@@ -93,6 +100,9 @@ const getLoc = async () => {
     key: '你的高德地图API密钥', // 需要替换成你的密钥
   }
   const loc = await getLocation(params)
+}
+const onLogout = () => {
+  auth.logout()
 }
 const gotocommon = debounce(
   () => {
@@ -137,8 +147,13 @@ const gotoConvention = debounce(
 onMounted(async () => {
   updateTime()
   setInterval(updateTime, 1000)
-  const alarms = await getAlarmView()
-  alarmCount.value = alarms.pending
+  if (!auth.isAuthenticated) return
+  try {
+    const alarms = await getAlarmView()
+    alarmCount.value = alarms.pending
+  } catch (error) {
+    console.warn('告警数加载失败', error)
+  }
 })
 
 // 组件卸载时清除定时器
@@ -217,6 +232,28 @@ onUnmounted(() => {
     left: 41%;
     font-size: 18px;
     font-family: HuXiaoBo;
+  }
+  .user-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-right: 24px;
+  }
+  .user-name {
+    font-size: 16px;
+    color: rgba(220, 240, 255, 0.9);
+  }
+  .logout-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid rgba(140, 200, 230, 0.45);
+    background: transparent;
+    color: #dff4ff;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .logout-btn:hover {
+    border-color: rgba(180, 230, 255, 0.8);
   }
   .time {
     font-family: MicrosoftYaHei;

@@ -15,6 +15,13 @@ function once(key, request) {
   return cache.get(key)
 }
 
+export function clearConventionCache() {
+  cache.clear()
+}
+
+/** POST /api/auth/login -> { access_token, token_type, username? } */
+export const login = (data) => http.post('/auth/login', data)
+
 export const fetchHalls = () => once('halls', () => http.get('/halls'))
 export const fetchDevices = () => once('devices', () => http.get('/devices'))
 export const fetchDeviceCount = () => once('device-count', () => http.get('/devices/count'))

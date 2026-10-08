@@ -1,8 +1,11 @@
 <template>
+  <LoginGate />
   <router-view />
 </template>
 
-<script setup></script>
+<script setup>
+import LoginGate from '@/components/commonVue/LoginGate.vue'
+</script>
 
 <style lang="css">
 @import '@/assets/style/three-label.css';
