@@ -19,7 +19,7 @@ export function clearConventionCache() {
   cache.clear()
 }
 
-/** POST /api/auth/login -> { access_token, token_type, username? } */
+/** POST /api/auth/login -> 信封解包后 { access_token, token_type, username? } */
 export const login = (data) => http.post('/auth/login', data)
 
 export const fetchHalls = () => once('halls', () => http.get('/halls'))

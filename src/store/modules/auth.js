@@ -43,8 +43,10 @@ export const useAuthStore = defineStore('auth', () => {
       applySession(accessToken, data.username || form.username.trim())
       return true
     } catch (error) {
+      const body = error?.response?.data
       const detail =
-        error?.response?.data?.detail ||
+        (typeof body?.msg === 'string' && body.msg) ||
+        (typeof body?.detail === 'string' && body.detail) ||
         error?.message ||
         '登录失败，请检查账号密码或后端服务'
       loginError.value = typeof detail === 'string' ? detail : '登录失败'
