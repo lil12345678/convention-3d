@@ -150,36 +150,6 @@ const applyList = () => {
       id: item.id,
     }))
 }
-const getData = () => {
-  list.value = [
-    {
-      name: '中国（中原）工业博览会展示会',
-      date: '2024.12.06 - 2024.12.08',
-      id: '1',
-    },
-    {
-      name: '中国（中原）工业博览会展示会',
-      date: '2024.12.06 - 2024.12.08',
-      id: '2',
-    },
-    {
-      name: '中国（中原）工业博览会展示会',
-      date: '2024.12.06 - 2024.12.08',
-      id: '3',
-    },
-  ]
-}
-const getNum = () => {
-  num1.value = 100
-  num2.value = 80
-  num3.value = 20
-}
-const getListData = () => {
-  adataList.value = [
-    { id: '11', sort: '01', name: '展A1245A', aa: 'B1出入口', unit: '人', date2: '2024.12.06-08' },
-    { id: '22', sort: '02', name: '展A1245A', aa: 'B1出入口', unit: '人', date2: '2024.12.06-08' },
-  ]
-}
 </script>
 
 <style lang="scss" scoped>

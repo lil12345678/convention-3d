@@ -113,34 +113,6 @@ onMounted(async () => {
   percentage1.value = percent(exhibitions.filter((item) => item.status === '进行中').length, exhibitions.length)
   percentage2.value = percent(exhibitions.filter((item) => item.status === '已结束').length, exhibitions.length)
 })
-const getNum = () => {
-  const data = 1234
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-  num4.value = formattedData
-  num5.value = formattedData
-  num6.value = formattedData
-}
-const getPercent1 = () => {
-  const data = 29.2918
-  if (data > 100) {
-    percentage1.value = 100
-  } else {
-    percentage1.value = Math.round(data)
-  }
-}
-const getPercent2 = () => {
-  const data = 40
-  if (data > 100) {
-    percentage1.value = 100
-  } else {
-    percentage2.value = Math.round(data)
-  }
-}
 </script>
 <style lang="scss" scoped>
 @use '@/assets/style/model-header.scss';

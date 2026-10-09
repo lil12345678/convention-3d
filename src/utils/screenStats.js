@@ -152,6 +152,22 @@ export async function getHalls() {
   return fetchHalls()
 }
 
+export async function getDevices() {
+  return fetchDevices()
+}
+
+export function summarizeDevices(devices, leafType) {
+  const rows = devices.filter((item) => item.leaf_type === leafType)
+  const count = (status) => rows.filter((item) => item.status === status).length
+  return {
+    total: rows.length,
+    online: count('在线'),
+    offline: count('离线'),
+    fault: count('故障'),
+    halls: [...new Set(rows.map((item) => item.hall_name))],
+  }
+}
+
 function energyOf(readings, kind) {
   const now = new Date()
   const year = String(now.getFullYear())

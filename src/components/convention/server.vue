@@ -8,9 +8,9 @@
         <div class="record-list">
           <div class="table-header">
             <span>序号</span>
-            <span>展商名称</span>
-            <span>展商展位</span>
-            <span>服务类型</span>
+            <span>活动名称</span>
+            <span>场馆</span>
+            <span>活动类型</span>
             <span>时间</span>
           </div>
           <div class="table-body" v-if="tableData.length">
@@ -32,7 +32,7 @@
           <div ref="chartRef20" class="chart-container"></div>
         </div>
         <div class="r-bottom">
-          <div class="title">参展商区域分布</div>
+          <div class="title">场馆展会分布</div>
           <img src="../../assets/img/circle-data2.png" class="circle-outer" />
           <div ref="chartRef21" class="chart-container"></div>
         </div>
@@ -50,26 +50,8 @@ const chartRef20 = ref(null)
 const chartRef21 = ref(null)
 let myChart = null
 let myChart2 = null
-const chartData1 = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
-const chartData2 = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
-const chartData3 = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
-const chartData4 = ref([0, 0, 0, 0, 0, 0, 0, 0, 0])
-const chartData5 = ref([
-  { value: '--', name: '湖北' },
-  { value: '--', name: '湖南' },
-  { value: '--', name: '广州' },
-  { value: '--', name: '广西' },
-  { value: '--', name: '江西' },
-  { value: '--', name: '河南' },
-  { value: '--', name: '四川' },
-  { value: '--', name: '云南' },
-  { value: '--', name: '贵州' },
-  { value: '--', name: '重庆' },
-  { value: '--', name: '四川' },
-  { value: '--', name: '云南' },
-  { value: '--', name: '贵州' },
-  { value: '--', name: '重庆' },
-])
+const chartData1 = ref([])
+const chartData5 = ref([])
 // 表格数据
 const tableData = ref([])
 onMounted(async () => {
@@ -109,59 +91,6 @@ onMounted(async () => {
   }
 })
 
-const getTableData = () => {
-  tableData.value = [
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '高速门问题',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '物资机器人',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '洗地机',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '消防车',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '高速门问题',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '物资机器人',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-    {
-      id: '01',
-      code: 'ZC001',
-      type: '洗地机',
-      time: '2024.11.21 14:22',
-      status: '维修中',
-    },
-  ]
-}
 const initChart = () => {
   myChart = echarts.init(chartRef20.value)
   const option = {
@@ -170,16 +99,6 @@ const initChart = () => {
       axisPointer: {
         type: 'line',
       },
-    },
-    legend: {
-      data: ['A1', 'A2', 'A3', 'A4'],
-      textStyle: {
-        color: '#fff',
-      },
-      icon: 'square',
-      x: 'center',
-      top: 0,
-      right: 10,
     },
     grid: {
       top: '15%',
@@ -190,7 +109,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['A1', 'A2', 'A3', 'A4'],
+      data: [],
       axisLine: {
         lineStyle: {
           color: 'rgba(255,255,255,0.2)',
@@ -213,55 +132,15 @@ const initChart = () => {
     },
     series: [
       {
-        name: 'A1',
+        name: '在馆人数',
         type: 'line',
-        stack: 'Total',
         areaStyle: {},
         emphasis: {
           focus: 'series',
         },
-        data: chartData1.value, // 使用最新数据,
+        data: chartData1.value,
         itemStyle: {
           color: '#00DEFF',
-        },
-      },
-      {
-        name: 'A2',
-        type: 'line',
-        stack: 'Total',
-        areaStyle: {},
-        emphasis: {
-          focus: 'series',
-        },
-        data: chartData2.value, // 使用最新数据,
-        itemStyle: {
-          color: '#FFB800',
-        },
-      },
-      {
-        name: 'A3',
-        type: 'line',
-        stack: 'Total',
-        areaStyle: {},
-        emphasis: {
-          focus: 'series',
-        },
-        data: chartData3.value, // 使用最新数据,
-        itemStyle: {
-          color: '#FF5722',
-        },
-      },
-      {
-        name: 'A4',
-        type: 'line',
-        stack: 'Total',
-        areaStyle: {},
-        emphasis: {
-          focus: 'series',
-        },
-        data: chartData4.value, // 使用最新数据,
-        itemStyle: {
-          color: '#9C27B0',
         },
       },
     ],
@@ -308,7 +187,7 @@ const initChart2 = () => {
     },
     series: [
       {
-        name: 'Access From',
+        name: '展会数',
         type: 'pie',
         radius: ['40%', '60%'],
         center: ['25%', '50%'],
@@ -346,60 +225,6 @@ const initChart2 = () => {
     ],
   }
   myChart2.setOption(option)
-}
-const getChartData1 = () => {
-  chartData1.value = [0, 20, 0, 30] // 示例数据
-  chartData2.value = [10, 20, 30, 40] // 示例数据
-  chartData3.value = [20, 30, 40, 50] // 示例数据
-  chartData4.value = [30, 40, 50, 60] // 示例数据
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData1.value, // 使用最新数据,
-        },
-        {
-          data: chartData2.value, // 使用最新数据,
-        },
-        {
-          data: chartData3.value, // 使用最新数据,
-        },
-        {
-          data: chartData4.value, // 使用最新数据,
-        },
-      ],
-    })
-  }
-}
-const getChartData2 = () => {
-  chartData5.value = [
-    { value: 1048, name: '湖北' },
-    { value: 735, name: '湖南' },
-    { value: 580, name: '广州' },
-    { value: 484, name: '广西' },
-    { value: 300, name: '江西' },
-    { value: 420, name: '河南' },
-    { value: 368, name: '四川' },
-    { value: 290, name: '云南' },
-    { value: 265, name: '贵州' },
-    { value: 248, name: '重庆' },
-    { value: 368, name: '四川' },
-    { value: 290, name: '云南' },
-    { value: 265, name: '贵州' },
-    { value: 248, name: '重庆' },
-  ] // 示例数据
-  if (myChart2) {
-    myChart2.setOption({
-      series: [
-        {
-          data: chartData5.value, // 使用最新数据,
-        },
-      ],
-    })
-  }
-  if (myChart2) {
-    myChart2.setOption({})
-  }
 }
 onUnmounted(() => {
   if (myChart) {

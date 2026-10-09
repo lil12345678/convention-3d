@@ -92,9 +92,9 @@ import * as echarts from 'echarts'
 import { applyChart, getAlarmView } from '@/utils/screenStats'
 
 const num1 = ref('--')
-const percentage1 = ref(1)
-const percentage2 = ref(1)
-const percentage3 = ref(1)
+const percentage1 = ref(0)
+const percentage2 = ref(0)
+const percentage3 = ref(0)
 const chartRef4 = ref(null)
 
 let myChart = null
@@ -138,16 +138,6 @@ const handleTabClick = (tab) => {
   activeTab.value = tab
   paintOverview()
 }
-const getdata = () => {
-  const data = 123590
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  percentage1.value = 70
-  percentage2.value = 50
-  percentage3.value = 20
-}
 const initChart = () => {
   myChart = echarts.init(chartRef4.value)
   const option = {
@@ -161,7 +151,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -196,18 +186,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  ChartData.value = [40, 20, 80, 60, 30, 20, 90, 40, 60]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: ChartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 onUnmounted(() => {
   if (myChart) {

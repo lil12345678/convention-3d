@@ -111,31 +111,6 @@ onMounted(async () => {
   }))
   righttotal.value = data.total
 })
-const getData = () => {
-  percentage.value = 80
-  const data = 12390
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  list.value = [
-    { label: '待处理', value: 85 },
-    { label: '处理中', value: 74 },
-    { label: '已处理', value: 61 },
-    { label: '已超期', value: 10 },
-  ]
-}
-const getRightdata = () => {
-  righttotal.value = 100
-  rightdata.value = [
-    { percentage: 10, color: '#17fcff', type: 'danger', label: '维修工单' }, // 一般
-    { percentage: 20, color: '#4a17ff', type: 'warning', label: '报事工单' }, // 较急
-    { percentage: 30, color: '#feb817', type: 'normal', label: '投诉工单' }, // 紧急
-    { percentage: 40, color: '#f33e3e', type: 'best', label: '巡更工单' }, // 特急
-    { percentage: 40, color: '#cd17ff', type: 'five', label: '咨询工单' }, // 特急
-  ]
-}
 </script>
 <style lang="scss" scoped>
 @use '@/assets/style/model-header.scss';

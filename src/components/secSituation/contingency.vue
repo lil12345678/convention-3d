@@ -104,13 +104,6 @@ onMounted(async () => {
   chartData5.value = data.series[4]
   applyChart(myChart, data.labels, data.series)
 })
-const getData = () => {
-  num1.value = 10
-  num2.value = 10
-  num3.value = 10
-  num4.value = 10
-  num5.value = 10
-}
 const initChart = () => {
   myChart = echarts.init(chartRef6.value)
   const option = {
@@ -138,7 +131,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -190,35 +183,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData1.value = [40, 60, 40, 80, 60, 40]
-  chartData2.value = [50, 70, 50, 60, 70, 50]
-  chartData3.value = [20, 40, 20, 40, 20, 30]
-  chartData4.value = [10, 30, 10, 20, 10, 10]
-  chartData5.value = [10, 20, 10, 10, 10, 10]
-  // 确保 myChart 已初始化，否则会报错
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData1.value, // 使用最新数据
-        },
-        {
-          data: chartData2.value, // 使用最新数据
-        },
-        {
-          data: chartData3.value, // 使用最新数据
-        },
-        {
-          data: chartData4.value, // 使用最新数据
-        },
-        {
-          data: chartData5.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 </script>
 <style lang="scss" scoped>

@@ -119,7 +119,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['02/3', '02/2', '02/3', '02/4', '02/5', '02/6'],
+      data: [],
       axisLine: {
         lineStyle: {
           color: 'rgba(255,255,255,0.2)',
@@ -173,26 +173,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData1.value = [60, 30, 40, 20, 30, 40]
-  chartData2.value = [40, 50, 30, 20, 30, 40]
-  chartData3.value = [30, 40, 50, 20, 30, 40]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData1.value, // 使用最新数据
-        },
-        {
-          data: chartData2.value, // 使用最新数据
-        },
-        {
-          data: chartData3.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 onUnmounted(() => {
   if (myChart) {

@@ -3,9 +3,9 @@
     <img src="../assets/img/title.png" class="header-img" />
     <div class="header-left">
       <img src="../assets/img/location.png" alt="" class="img1" />
-      <div class="location">{{ location }}</div>
+      <div class="location">--</div>
       <img src="../assets/img/weather.png" alt="" class="img2" />
-      <span class="weather">晴朗 3°C</span>
+      <span class="weather">--</span>
     </div>
     <div class="header-center">
       <div class="center-l">
@@ -69,96 +69,69 @@
 </template>
 
 <script setup>
-import { reactive, toRefs, ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { getDateWeek } from '@/utils/date.js'
 import { debounce } from '@/utils/commonFunc.js'
 import { getAlarmView } from '@/utils/screenStats'
 import { useAuthStore } from '@/store/modules/auth'
 
-// import { getLocation } from '@/api/amap.js'
+const NAV_TITLES = {
+  '/': '综合态势',
+  '/SecSituation': '安防态势',
+  '/device': '设备运行',
+  '/energy': '能源管理',
+  '/convention': '会展信息',
+}
+
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const data = reactive({
-  currentTime: '',
-  location: '定位中……',
-})
-const { currentTime, location } = toRefs(data)
-const activeButton = ref('综合态势')
+const currentTime = ref('')
+/** 高亮跟随路由，点击、AI 指令、浏览器前进后退都能同步 */
+const activeButton = computed(() => NAV_TITLES[route.path] || '')
 const alarmCount = ref(0)
+let timer = null
 const updateTime = () => {
   const now = new Date()
   const hours = String(now.getHours()).padStart(2, '0')
   const minutes = String(now.getMinutes()).padStart(2, '0')
   const seconds = String(now.getSeconds()).padStart(2, '0')
-  data.currentTime = `${hours}:${minutes}:${seconds}`
-}
-// 获取位置信息
-const getLoc = async () => {
-  let params = {
-    key: '你的高德地图API密钥', // 需要替换成你的密钥
-  }
-  const loc = await getLocation(params)
+  currentTime.value = `${hours}:${minutes}:${seconds}`
 }
 const onLogout = () => {
   auth.logout()
 }
-const gotocommon = debounce(
-  () => {
-    activeButton.value = '综合态势'
-    router.push('/')
-  },
-  300,
-  true
-)
-const gotosec = debounce(
-  () => {
-    activeButton.value = '安防态势'
-    router.push('/SecSituation')
-  },
-  300,
-  true
-)
-const gotodevice = debounce(
-  () => {
-    activeButton.value = '设备运行'
-    router.push('/device')
-  },
-  300,
-  true
-)
-const gotoEng = debounce(
-  () => {
-    activeButton.value = '能源管理'
-    router.push('/energy')
-  },
-  300,
-  true
-)
-const gotoConvention = debounce(
-  () => {
-    activeButton.value = '会展信息'
-    router.push('/convention')
-  },
-  300,
-  true
-)
-onMounted(async () => {
-  updateTime()
-  setInterval(updateTime, 1000)
-  if (!auth.isAuthenticated) return
+const go = debounce((path) => router.push(path), 300, true)
+const gotocommon = () => go('/')
+const gotosec = () => go('/SecSituation')
+const gotodevice = () => go('/device')
+const gotoEng = () => go('/energy')
+const gotoConvention = () => go('/convention')
+
+const loadAlarmCount = async () => {
+  if (!auth.isAuthenticated) {
+    alarmCount.value = 0
+    return
+  }
   try {
     const alarms = await getAlarmView()
     alarmCount.value = alarms.pending
   } catch (error) {
     console.warn('告警数加载失败', error)
   }
+}
+watch(() => auth.sessionVersion, loadAlarmCount)
+
+onMounted(() => {
+  updateTime()
+  timer = setInterval(updateTime, 1000)
+  loadAlarmCount()
 })
 
-// 组件卸载时清除定时器
 onUnmounted(() => {
-  clearInterval(updateTime)
+  clearInterval(timer)
 })
 </script>
 

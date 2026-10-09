@@ -101,14 +101,14 @@ class TagManager {
     }
   }
   //入侵探测器
-  showsecurityLabel() {
+  async showsecurityLabel() {
     if (this.securitySprites) {
       this.securitySprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -123,7 +123,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '入侵探测器'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -146,14 +146,14 @@ class TagManager {
     }
   }
   //停车场
-  showparkingLabel() {
+  async showparkingLabel() {
     if (this.parkSprites) {
       this.parkSprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -171,7 +171,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '停车场匝道'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -194,14 +194,14 @@ class TagManager {
     }
   }
   //门禁
-  showdoorLabel() {
+  async showdoorLabel() {
     if (this.doorSprites) {
       this.doorSprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -218,7 +218,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '门禁'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -240,14 +240,14 @@ class TagManager {
       this.doorSprites = null // 清空引用
     }
   }
-  showAC1Label() {
+  async showAC1Label() {
     if (this.ac1Sprites) {
       this.ac1Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -265,7 +265,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '空调用电'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -287,14 +287,14 @@ class TagManager {
       this.ac1Sprites = null // 清空引用
     }
   }
-  showAC2Label() {
+  async showAC2Label() {
     if (this.ac2Sprites) {
       this.ac2Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -312,7 +312,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '集中空调'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -334,14 +334,14 @@ class TagManager {
       this.ac2Sprites = null // 清空引用
     }
   }
-  showAC3Label() {
+  async showAC3Label() {
     if (this.ac3Sprites) {
       this.ac3Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -359,7 +359,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '辐射空调'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -381,14 +381,14 @@ class TagManager {
       this.ac3Sprites = null // 清空引用
     }
   }
-  showAC4Label() {
+  async showAC4Label() {
     if (this.ac4Sprites) {
       this.ac4Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -406,7 +406,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '应急照明'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -428,14 +428,14 @@ class TagManager {
       this.ac4Sprites = null // 清空引用
     }
   }
-  showAC5Label() {
+  async showAC5Label() {
     if (this.ac5Sprites) {
       this.ac5Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -453,7 +453,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '照明插座'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -475,14 +475,14 @@ class TagManager {
       this.ac5Sprites = null // 清空引用
     }
   }
-  showAC6Label() {
+  async showAC6Label() {
     if (this.ac6Sprites) {
       this.ac6Sprites.visible = true
       return
     }
 
     const modelManager = ModelManager.getInstance()
-    const modelMesh = modelManager.getTagPoint()
+    const modelMesh = await modelManager.loadtagpoint().catch(() => null)
 
     if (!modelMesh) {
       console.warn('模型未加载，无法创建标签')
@@ -500,7 +500,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          type
+          '景观照明'
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)

@@ -13,97 +13,54 @@
     </div>
   </div>
 
-  <!-- 监控设备树形选择面板 -->
-  <div class="tree-panel" v-show="activeDevice === 'monitor'">
+  <div class="tree-panel" v-for="item in deviceList" :key="item.id" v-show="activeDevice === item.id">
     <div class="tree-header">
-      <span>监控设备</span>
+      <span>{{ item.name }}</span>
     </div>
-    <div class="tree-content">
-      <div v-for="(area, index) in monitorTree" :key="index" class="tree-area">
-        <div class="area-title" @click="toggleArea(index)">
-          <span class="toggle-icon">{{ area.expanded ? '▼' : '▶' }}</span>
-          <span>{{ area.name }}</span>
+    <div class="tree-content" v-if="item.groups">
+      <div v-for="group in item.groups" :key="group.name" class="tree-area">
+        <div class="area-title" @click="toggleArea(group)">
+          <span class="toggle-icon">{{ group.expanded ? '▼' : '▶' }}</span>
+          <span>{{ group.name }}</span>
         </div>
-        <div class="area-devices" v-show="area.expanded">
+        <div class="area-devices" v-show="group.expanded">
           <div
-            v-for="device in area.devices"
-            :key="device.id"
+            v-for="leaf in group.leaves"
+            :key="leaf.name"
             class="device-option"
-            :class="{ active: selectedDevice === device.id }"
-            @click="selectDevice(device)"
+            :class="{ active: selectedLeaf === leaf.name }"
+            @click="selectLeaf(leaf)"
           >
             <span class="checkbox"></span>
-            <span>{{ device.name }}</span>
+            <span>{{ leaf.name }}（{{ leaf.total }}）</span>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- 安防设备选择面板 -->
-  <div class="tree-panel" v-show="activeDevice === 'security'">
-    <div class="tree-header">
-      <span>安防设备</span>
-    </div>
-    <div class="tree-content">
+    <div class="tree-content" v-else>
       <div
-        v-for="(item, index) in securityList"
-        :key="index"
+        v-for="leaf in item.leaves"
+        :key="leaf.name"
         class="device-option"
-        :class="{ active: selectedSecurityDevice === item.id }"
-        @click="selectSecurityDevice(item)"
+        :class="{ active: selectedLeaf === leaf.name }"
+        @click="selectLeaf(leaf)"
       >
         <span class="checkbox"></span>
-        <img :src="item.icon" alt="" class="item-icon" />
-        <span>{{ item.name }}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 楼宇自控面板 -->
-  <div class="tree-panel" v-show="activeDevice === 'elevator'">
-    <div class="tree-header">
-      <span>楼宇自控</span>
-    </div>
-    <div class="tree-content">
-      <div
-        v-for="(item, index) in elevatorList"
-        :key="index"
-        class="device-option"
-        :class="{ active: selectedElevatorDevice === item.id }"
-        @click="selectElevatorDevice(item)"
-      >
-        <span class="checkbox"></span>
-        <img :src="item.icon" alt="" class="item-icon" />
-        <span>{{ item.name }}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 能效设备面板 -->
-  <div class="tree-panel" v-show="activeDevice === 'energy'">
-    <div class="tree-header">
-      <span>能效设备</span>
-    </div>
-    <div class="tree-content">
-      <div
-        v-for="(item, index) in energyList"
-        :key="index"
-        class="device-option"
-        :class="{ active: selectedEnergyDevice === item.id }"
-        @click="selectEnergyDevice(item)"
-      >
-        <span class="checkbox"></span>
-        <img :src="item.icon" alt="" class="item-icon" />
-        <span>{{ item.name }}</span>
+        <img :src="leaf.icon" alt="" class="item-icon" v-if="leaf.icon" />
+        <span>{{ leaf.name }}（{{ leaf.total }}）</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import eventHub from '@/utils/eventHub'
 import { debounce } from '@/utils/commonFunc.js'
+import { registerDeviceController } from '@/ai/aiCommandBus'
+import { useAuthStore } from '@/store/modules/auth'
+import { isLoggedIn } from '@/utils/conventionAuth'
+import { getDevices } from '@/utils/screenStats'
 
 import monitor from '../assets/icon/d1.png'
 import security from '../assets/icon/d2.png'
@@ -119,104 +76,128 @@ import d6 from '../assets/icon/d3-3.png'
 import d7 from '../assets/icon/d4-1.png'
 import d8 from '../assets/icon/d4-2.png'
 
-const emit = defineEmits(['select'])
+const CATEGORY_ICONS = { monitor, security, elevator, energy }
+const LEAF_ICONS = {
+  入侵探测器: d1,
+  停车场匝道: d2,
+  门禁: d3,
+  照明: d4,
+  冷热源: d5,
+  空调: d6,
+  电表: d7,
+  水表: d8,
+}
+/** 3D 模型里有标签点位的设备类型 → tagManage 的事件前缀 */
+const SCENE_LABELS = {
+  空调用电: 'ac1',
+  集中空调: 'ac2',
+  辐射空调: 'ac3',
+  应急照明: 'ac4',
+  照明插座: 'ac5',
+  景观照明: 'ac6',
+  入侵探测器: 'security',
+  停车场匝道: 'parking',
+  门禁: 'door',
+}
+/** 监控设备按设备组展示成树，其余分类平铺 */
+const TREE_CATEGORIES = ['monitor']
+
+const auth = useAuthStore()
 const activeDevice = ref('')
-const showTreePanel = ref(false)
-const selectedDevice = ref('')
-const selectedSecurityDevice = ref('')
-const selectedElevatorDevice = ref('')
-const selectedEnergyDevice = ref('')
-const deviceList = [
-  { id: 'monitor', name: '监控设备', icon: monitor },
-  { id: 'security', name: '安防设备', icon: security },
-  { id: 'elevator', name: '楼宇自控', icon: elevator },
-  { id: 'energy', name: '能效设备', icon: energy },
-]
-// 监控设备树形数据
-const monitorTree = ref([
-  {
-    name: 'A展厅',
-    expanded: true, // 默认展开
-    devices: [
-      { id: 'monitor1', name: '空调用电' },
-      { id: 'monitor2', name: '集中空调' },
-      { id: 'monitor3', name: '辐射空调' },
-    ],
-  },
-  {
-    name: 'B展厅',
-    expanded: true, // 默认展开
-    devices: [
-      { id: 'monitor4', name: '应急照明' },
-      { id: 'monitor5', name: '照明插座' },
-      { id: 'monitor6', name: '景观照明' },
-    ],
-  },
-])
-const securityList = ref([
-  { id: 'security1', name: '入侵探测器', icon: d1 },
-  { id: 'security2', name: '停车场匝道', icon: d2 },
-  { id: 'security3', name: '门禁', icon: d3 },
-])
+const selectedLeaf = ref('')
+const deviceList = ref([])
 
-const elevatorList = ref([
-  { id: 'elevator1', name: '照明', icon: d4 },
-  { id: 'elevator2', name: '冷热源', icon: d5 },
-  { id: 'elevator3', name: '空调', icon: d6 },
-])
+function buildDeviceList(devices) {
+  const categories = new Map()
+  devices.forEach((device) => {
+    if (!categories.has(device.category)) {
+      categories.set(device.category, { id: device.category, name: device.category_name, rows: [] })
+    }
+    categories.get(device.category).rows.push(device)
+  })
+  return [...categories.values()].map(({ id, name, rows }) => {
+    const leafMap = new Map()
+    rows.forEach((row) => {
+      if (!leafMap.has(row.leaf_type)) {
+        leafMap.set(row.leaf_type, { name: row.leaf_type, group: row.group_name, total: 0, icon: LEAF_ICONS[row.leaf_type] })
+      }
+      leafMap.get(row.leaf_type).total += 1
+    })
+    const leaves = [...leafMap.values()]
+    const item = { id, name, icon: CATEGORY_ICONS[id], leaves }
+    if (TREE_CATEGORIES.includes(id)) {
+      const groups = new Map()
+      leaves.forEach((leaf) => {
+        if (!groups.has(leaf.group)) groups.set(leaf.group, { name: leaf.group, expanded: true, leaves: [] })
+        groups.get(leaf.group).leaves.push(leaf)
+      })
+      item.groups = [...groups.values()]
+    }
+    return item
+  })
+}
 
-const energyList = ref([
-  { id: 'energy1', name: '电表', icon: d7 },
-  { id: 'energy2', name: '水表', icon: d8 },
-])
+async function loadDevices() {
+  if (!isLoggedIn()) {
+    deviceList.value = []
+    return
+  }
+  deviceList.value = buildDeviceList(await getDevices())
+}
+
+function hideSceneLabels() {
+  Object.values(SCENE_LABELS).forEach((key) => eventHub.emit(`hide${key}LabelCallback`))
+}
+
+watch(() => auth.sessionVersion, loadDevices)
 
 onMounted(() => {
-  eventHub.on('hideDeviceMenuCallback', () => hidemenu())
+  loadDevices()
+  eventHub.on('hideDeviceMenuCallback', hidemenu)
   document.addEventListener('mousedown', handleClickOutside)
+  registerDeviceController({
+    openCategory(name) {
+      const item = deviceList.value.find((row) => row.name === name || row.id === name)
+      if (!item) return false
+      if (activeDevice.value !== item.id) handleDeviceClick(item)
+      return true
+    },
+    selectDevice(name) {
+      const item = deviceList.value.find((row) => row.leaves.some((leaf) => leaf.name === name))
+      if (!item) return false
+      if (activeDevice.value !== item.id) handleDeviceClick(item)
+      selectLeaf(item.leaves.find((leaf) => leaf.name === name))
+      return true
+    },
+    getState() {
+      return {
+        category: deviceList.value.find((row) => row.id === activeDevice.value)?.name || null,
+        device: selectedLeaf.value || null,
+      }
+    },
+    listCategories: () => deviceList.value.map((row) => row.name),
+    listDevices: () => deviceList.value.flatMap((row) => row.leaves.map((leaf) => leaf.name)),
+  })
 })
 onBeforeUnmount(() => {
+  eventHub.off('hideDeviceMenuCallback', hidemenu)
   document.removeEventListener('mousedown', handleClickOutside)
+  registerDeviceController(null)
 })
-function handleClickOutside(event) {
-  // 检查点击事件是否来自下拉框内部
-  const isClickInDropdown = ['.tree-panel'].some((selector) => {
-    const element = event.target.closest(selector)
-    return element !== null
-  })
 
-  // 如果点击的不是下拉框内部，则关闭所有下拉框
-  if (!isClickInDropdown) {
-    hidemenu()
-  }
+function handleClickOutside(event) {
+  if (!event.target.closest('.tree-panel')) hidemenu()
 }
 
-const hidemenu = () => {
+function hidemenu() {
   activeDevice.value = ''
 }
+
 const handleDeviceClick = debounce(
   (item) => {
     activeDevice.value = item.id
-    if (item.id == 'monitor') {
-      showTreePanel.value = true
-    } else {
-      showTreePanel.value = false
-    }
-    //清空已选设备
-    selectedDevice.value = ''
-    selectedSecurityDevice.value = ''
-    selectedElevatorDevice.value = ''
-    selectedEnergyDevice.value = ''
-    //清空所有标签
-    eventHub.emit('hidesecurityLabelCallback')
-    eventHub.emit('hideparkingLabelCallback')
-    eventHub.emit('hidedoorLabelCallback')
-    eventHub.emit('hideac1LabelCallback')
-    eventHub.emit('hideac1LabelCallback')
-    eventHub.emit('hideac2LabelCallback')
-    eventHub.emit('hideac3LabelCallback')
-    eventHub.emit('hideac4LabelCallback')
-    eventHub.emit('hideac5LabelCallback')
-    eventHub.emit('hideac6LabelCallback')
+    selectedLeaf.value = ''
+    hideSceneLabels()
     eventHub.emit('hideDeviceInfo')
   },
   300,
@@ -224,88 +205,21 @@ const handleDeviceClick = debounce(
 )
 
 const toggleArea = debounce(
-  (index) => {
-    monitorTree.value[index].expanded = !monitorTree.value[index].expanded
+  (group) => {
+    group.expanded = !group.expanded
   },
   300,
   true
 )
 
-const selectDevice = debounce(
-  (device) => {
-    selectedDevice.value = device.id
-    if (device.id === 'monitor1') {
-      eventHub.emit('ac1LabelCallback')
-    } else {
-      eventHub.emit('hideac1LabelCallback')
-    }
-    if (device.id === 'monitor2') {
-      eventHub.emit('ac2LabelCallback')
-    } else {
-      eventHub.emit('hideac2LabelCallback')
-    }
-    if (device.id === 'monitor3') {
-      eventHub.emit('ac3LabelCallback')
-    } else {
-      eventHub.emit('hideac3LabelCallback')
-    }
-    if (device.id === 'monitor4') {
-      eventHub.emit('ac4LabelCallback')
-    } else {
-      eventHub.emit('hideac4LabelCallback')
-    }
-    if (device.id === 'monitor5') {
-      eventHub.emit('ac5LabelCallback')
-    } else {
-      eventHub.emit('hideac5LabelCallback')
-    }
-    if (device.id === 'monitor6') {
-      eventHub.emit('ac6LabelCallback')
-    } else {
-      eventHub.emit('hideac6LabelCallback')
-    }
+const selectLeaf = debounce(
+  (leaf) => {
+    selectedLeaf.value = leaf.name
+    Object.entries(SCENE_LABELS).forEach(([name, key]) => {
+      eventHub.emit(name === leaf.name ? `${key}LabelCallback` : `hide${key}LabelCallback`)
+    })
     eventHub.emit('hideDeviceInfo')
     eventHub.emit('hideStadiumLabelCallback')
-  },
-  300,
-  true
-)
-const selectSecurityDevice = debounce(
-  (device) => {
-    selectedSecurityDevice.value = device.id
-    if (device.id === 'security1') {
-      eventHub.emit('securityLabelCallback')
-    } else {
-      eventHub.emit('hidesecurityLabelCallback')
-    }
-    if (device.id === 'security2') {
-      eventHub.emit('parkingLabelCallback')
-    } else {
-      eventHub.emit('hideparkingLabelCallback')
-    }
-    if (device.id === 'security3') {
-      eventHub.emit('doorLabelCallback')
-    } else {
-      eventHub.emit('hidedoorLabelCallback')
-    }
-    eventHub.emit('hideDeviceInfo')
-    eventHub.emit('hideStadiumLabelCallback')
-  },
-  300,
-  true
-)
-
-const selectElevatorDevice = debounce(
-  (device) => {
-    selectedElevatorDevice.value = device.id
-  },
-  300,
-  true
-)
-
-const selectEnergyDevice = debounce(
-  (device) => {
-    selectedEnergyDevice.value = device.id
   },
   300,
   true

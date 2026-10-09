@@ -126,7 +126,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -160,18 +160,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [40, 20, 80, 60, 30, 20, 90, 40, 60]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 </script>
 <style lang="scss" scoped>

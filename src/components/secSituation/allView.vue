@@ -86,47 +86,6 @@ onMounted(async () => {
   righttotal.value = alarms.total
   perText2.value = alarms.levels[0]?.name || '一般'
 })
-const getData = () => {
-  total.value = 100
-
-  const d = 13456
-  let roundedData = d.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-
-  const list = [
-    { percentage: 10, color: '#40f0ff', type: 'normal', label: '在线' }, // 在线
-    { percentage: 40, color: '#807e6f', type: 'warning', label: '离线' }, // 离线
-    { percentage: 10, color: '#ffaf28', type: 'danger', label: '故障' }, // 故障
-  ]
-  // 校验list中percentage并转换为有效数字（处理字符串/NaN情况）
-  const validData = list.map((item) => {
-    const pct = Number(item.percentage)
-    return isNaN(pct) ? 0 : pct // 非数字或NaN时置0
-  })
-  data.value = validData.map((pct, index) => ({
-    ...list[index], // 保留原始对象的其他属性
-    percentage: pct, // 更新百分比
-  }))
-}
-const getRightdata = () => {
-  righttotal.value = 100
-  const list = [
-    { percentage: '12', color: '#17fcff', type: 'danger', label: '一般' }, // 一般
-    { percentage: 20, color: '#4a17ff', type: 'warning', label: '较急' }, // 较急
-    { percentage: 30, color: '#feb817', type: 'normal', label: '紧急' }, // 紧急
-    { percentage: 40, color: '#f33e3e', type: 'best', label: '特急' }, // 特急
-  ]
-  // 校验list中percentage并转换为有效数字（处理字符串/NaN情况）
-  const validData = list.map((item) => {
-    const pct = Number(item.percentage)
-    return isNaN(pct) ? 0 : pct // 非数字或NaN时置0
-  })
-  rightdata.value = validData.map((pct, index) => ({
-    ...list[index], // 保留原始对象的其他属性
-    percentage: pct, // 更新百分比
-  }))
-}
 </script>
 <style lang="scss" scoped>
 @use '@/assets/style/model-header.scss';

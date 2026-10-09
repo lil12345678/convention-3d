@@ -105,6 +105,7 @@ import night from '../assets/icon/tab-4-active.png'
 
 import eventHub from '@/utils/eventHub'
 import { debounce } from '@/utils/commonFunc.js'
+import { registerSceneController } from '@/ai/aiCommandBus'
 
 const activeTab = ref('总览')
 const currentDayNight = ref('day')
@@ -174,9 +175,31 @@ const roamOptions = [
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
+  // AI 指令复用按钮的处理函数，保证面板高亮与 3D 场景状态一致
+  registerSceneController({
+    switchTab: (name) => {
+      const tab = tabList.find((item) => item.name === name)
+      if (tab) handleTabChange(tab)
+    },
+    selectBuilding: (name) => {
+      const option = buildOptions.find((item) => item.name === name)
+      if (option) handleBuildChange(option)
+    },
+    selectFloor: (value) => handleLevelChange(value),
+    selectRoute: (value) => handleRoamChange(value),
+    startRoam: () => {
+      if (!isStart.value) handleRoamStart()
+    },
+    getState: () => ({
+      tab: activeTab.value,
+      building: currentBuild.value,
+      route: currentRoam.value,
+    }),
+  })
 })
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+  registerSceneController(null)
 })
 function handleClickOutside(event) {
   // 检查点击事件是否来自下拉框内部
@@ -252,6 +275,7 @@ const handleTabChange = debounce(
     eventHub.emit('weatherCallback', { weather: 'sunny', type: 'tabchange' }) //无论点击哪个tab都清理天气,重置为晴天
     eventHub.emit('walkCallback') //清除漫游
     eventHub.emit('buildSelectCallback') //恢复分层
+    currentBuild.value = null
 
     leftRightPanel(tab)
   },

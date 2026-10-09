@@ -112,7 +112,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['01', '02', '03', '04', '05', '06', '07', '08', '09'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -147,18 +147,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [10, 80, 20, 50, 42, 13, 91, 19, 15]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 onUnmounted(() => {
   if (myChart) {

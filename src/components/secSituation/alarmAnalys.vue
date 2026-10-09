@@ -60,13 +60,7 @@ import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import Empty from '@/components/commonVue/emptyData.vue'
 import { getAlarmView } from '@/utils/screenStats'
 
-const alarmList = ref([
-  { rank: 'TOP', num: 1, name: 'AI视频告警', value: '--', percentage: 1, color: '#DD1D4E' },
-  { rank: 'TOP', num: 2, name: '入侵告警', value: '--', percentage: 1, color: '#FFAF28' },
-  { rank: 'TOP', num: 3, name: '消防告警', value: '--', percentage: 1, color: '#00D0FF' },
-  { rank: 'TOP', num: 4, name: '消防告警', value: '--', percentage: 1, color: '#AFFFCC' },
-  { rank: 'TOP', num: 5, name: '消防告警', value: '--', percentage: 1, color: '#fff' },
-])
+const alarmList = ref([])
 
 const list = ref([])
 onMounted(async () => {
@@ -89,48 +83,6 @@ onMounted(async () => {
   }))
 })
 
-const getPer = () => {
-  const data = [
-    { rank: 'TOP', num: 1, name: 'AI视频告警', value: '--', percentage: '-', color: '#DD1D4E' },
-    { rank: 'TOP', num: 2, name: '入侵告警', value: 4675, percentage: 50, color: '#FFAF28' },
-    { rank: 'TOP', num: 3, name: '消防告警', value: 4675, percentage: 20, color: '#00D0FF' },
-    { rank: 'TOP', num: 4, name: '消防告警', value: 4675, percentage: 20, color: '#AFFFCC' },
-    { rank: 'TOP', num: 5, name: '消防告警', value: 4675, percentage: 20, color: '#fff' },
-  ]
-  // 校验list中percentage并转换为有效数字（处理字符串/NaN情况）
-  const validData = data.map((item) => {
-    // 验证 percentage 字段，非数字或 NaN 时置 0
-    const pct = Number(item.percentage)
-    const validPct = isNaN(pct) ? 1 : pct
-    // // 验证 value 字段，非数字或 NaN 时置 0
-    // const val = Number(item.value)
-    // const validVal = isNaN(val) ? 0 : val
-    return {
-      ...item,
-      percentage: validPct,
-      // value: validVal,
-    }
-  })
-  alarmList.value = validData
-}
-const getData = () => {
-  list.value = [
-    {
-      sort: '01',
-      level: '紧急',
-      type: 'AI视频告警',
-      time: '2024.11.21 14:22',
-      status: '未处理',
-    },
-    {
-      sort: '02',
-      level: '紧急',
-      type: 'AI视频告警',
-      time: '2024.11.21 14:22',
-      status: '未处理',
-    },
-  ]
-}
 </script>
 <style lang="scss" scoped>
 @use '@/assets/style/model-header.scss';

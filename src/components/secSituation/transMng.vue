@@ -112,20 +112,6 @@ onMounted(async () => {
     [(crowd.items || []).map((item) => item.headcount)],
   )
 })
-const getPercent = () => {
-  const data = 29.2918
-  if (data > 100) {
-    percentage.value = 100
-  } else {
-    percentage.value = Math.round(data)
-  }
-  num2.value = 1000
-  num3.value = 600
-  num4.value = 400
-  num5.value = 200
-  num6.value = 300
-  num7.value = 100
-}
 const initChart = () => {
   myChart = echarts.init(chartRef5.value)
   const option = {
@@ -139,7 +125,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['A1馆', 'A2馆', 'A3馆', 'A4馆', 'A5馆', 'A6馆', 'A7馆', 'A8馆', 'A9馆'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -173,16 +159,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [40, 20, 80, 60, 30, 20, 90, 40, 60]
-  // const labels = ['1', '2', '3', '4', '5', '6', '7']
-  if (myChart) {
-    myChart.setOption({
-      // xAxis: { data: labels },
-      series: [{ data: chartData.value }],
-    })
-  }
 }
 </script>
 <style lang="scss" scoped>

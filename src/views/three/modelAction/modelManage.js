@@ -341,22 +341,23 @@ class ModelManager {
       throw error
     }
   }
+  /** 返回 tagpoint 场景；并发调用共用同一次加载 */
   async loadtagpoint() {
-    try {
-      // console.log(this.tagpoint) // 检查是否已经加载过，如果是直接返回之前的gltf对象而不重新加载
-      if (this.tagpoint) {
-        return this.tagpoint
-      }
-      const gltf = await loadOneModel('model/tagpoint.gltf')
-      console.log('tag加载成功:', gltf)
-      this.tagpoint = gltf.scene
-
-      this.scene.add(gltf.scene)
-      return gltf
-    } catch (error) {
-      console.error('tag模型1加载失败:', error)
-      throw error
+    if (this.tagpoint) return this.tagpoint
+    if (!this.tagpointLoading) {
+      this.tagpointLoading = loadOneModel('model/tagpoint.gltf')
+        .then((gltf) => {
+          this.tagpoint = gltf.scene
+          this.scene.add(gltf.scene)
+          return this.tagpoint
+        })
+        .catch((error) => {
+          console.error('tag模型1加载失败:', error)
+          this.tagpointLoading = null
+          throw error
+        })
     }
+    return this.tagpointLoading
   }
 
   showHeatMap() {

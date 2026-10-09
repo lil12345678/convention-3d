@@ -15,14 +15,6 @@
               <span class="label">{{ i.label }}</span>
               <span class="value">{{ i.val }} 件</span>
             </div>
-            <!-- <div class="status-item">
-              <span class="label">处理中</span>
-              <span class="value">74件</span>
-            </div>
-            <div class="status-item">
-              <span class="label">已处理</span>
-              <span class="value">61件</span>
-            </div> -->
           </div>
         </div>
       </div>
@@ -107,7 +99,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -142,18 +134,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  const data = [40, 20, 80, 60, 30, 20, 90, 40, 60] // 示例数据
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 
 onUnmounted(() => {

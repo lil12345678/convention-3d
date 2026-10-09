@@ -15,6 +15,8 @@ export const useAuthStore = defineStore('auth', () => {
   const loginVisible = ref(!getAccessToken())
   const loggingIn = ref(false)
   const loginError = ref('')
+  // 每次登录成功 +1，用来让大屏子页面重新挂载、重新拉数据
+  const sessionVersion = ref(0)
 
   const isAuthenticated = computed(() => Boolean(token.value))
 
@@ -25,6 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUsername(username.value)
     loginVisible.value = !token.value
     loginError.value = ''
+    if (accessToken) sessionVersion.value += 1
   }
 
   async function login(form) {
@@ -77,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
     loggingIn,
     loginError,
     isAuthenticated,
+    sessionVersion,
     login,
     logout,
     requireLogin,

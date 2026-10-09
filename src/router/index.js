@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getAccessToken } from '@/utils/conventionAuth'
 
 const routes = [
   {

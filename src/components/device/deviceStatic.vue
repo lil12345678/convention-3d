@@ -74,29 +74,6 @@ onMounted(async () => {
   rightdata.value = data.status
 })
 
-const getData = () => {
-  const data = 1234567890
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  list.value = [
-    { label: '弱电设备', num: 74 },
-    { label: '暖通设备', num: 74 },
-    { label: '消防设备', num: 61 },
-    { label: '电气设备', num: 10 },
-    { label: '给排水设备', num: 10 },
-  ]
-}
-const getRightdata = () => {
-  righttotal.value = 86
-
-  rightdata.value = [
-    { percentage: 10, color: '#17fcff', type: 'one', label: '在线' },
-    { percentage: 20, color: '#807E6F', type: 'two', label: '离线' },
-    { percentage: 30, color: '#feb817', type: 'three', label: '故障' },
-  ]
-}
 </script>
 <style lang="scss" scoped>
 @use '@/assets/style/model-header.scss';

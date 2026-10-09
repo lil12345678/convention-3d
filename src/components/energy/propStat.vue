@@ -52,11 +52,8 @@ let myChart = null
 const activeTab = ref('日')
 const chartData = ref([0, 0, 0, 0, 0, 0]) // 初始化数据为零
 const rightdata = ref([
-  { percentage: '--', color: '#40F0FF', type: 'one', label: '空调系统' }, // 一般
-  { percentage: '--', color: '#807E6F', type: 'two', label: '照明系统' }, // 较急
-  { percentage: '--', color: '#feb817', type: 'three', label: '电梯系统' }, // 紧急
-  { percentage: '--', color: '#3FD385', type: 'four', label: '新风系统' }, // 特急
-  { percentage: '--', color: '#3F55D3', type: 'five', label: '给排水系统' }, // 特急
+  { percentage: 0, color: '#40F0FF', type: 'one', label: '用电' },
+  { percentage: 0, color: '#3FD385', type: 'four', label: '用水' },
 ])
 const righttotal = ref('--')
 let energyMap = null
@@ -92,16 +89,6 @@ onMounted(async () => {
   energyMap = await getEnergyMap()
   paintProp()
 })
-const getNum = () => {
-  righttotal.value = 10
-  rightdata.value = [
-    { percentage: 10, color: '#40F0FF', type: 'one', label: '空调系统' }, // 一般
-    { percentage: 20, color: '#807E6F', type: 'two', label: '照明系统' }, // 较急
-    { percentage: 30, color: '#feb817', type: 'three', label: '电梯系统' }, // 紧急
-    { percentage: 40, color: '#3FD385', type: 'four', label: '新风系统' }, // 特急
-    { percentage: 10, color: '#3F55D3', type: 'five', label: '给排水系统' }, // 特急
-  ]
-}
 const initChart = () => {
   myChart = echarts.init(chartRef10.value)
   const option = {
@@ -114,7 +101,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['A1层', 'A2层', 'A3层', 'A4层', 'A5层', 'A6层'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -145,18 +132,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [90, 70, 40, 85, 40, 80]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 onUnmounted(() => {
   if (myChart) {

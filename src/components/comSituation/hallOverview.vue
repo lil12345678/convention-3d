@@ -174,38 +174,6 @@ onMounted(async () => {
   downStatus.value = data.countRate.down || data.visitorRate.down
 })
 
-const getPercent1 = () => {
-  const data = 29.2918
-  if (data > 100) {
-    percentage1.value = 100
-  } else {
-    percentage1.value = Math.round(data)
-  }
-}
-const getPercent2 = () => {
-  const data = 40
-  if (data > 100) {
-    percentage1.value = 100
-  } else {
-    percentage2.value = Math.round(data)
-  }
-}
-const getNum = () => {
-  const data = 1234567890
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-  num4.value = formattedData
-
-  const data1 = 0
-  tNum.value = Math.round(data1)
-  hNum.value = Math.round(data1)
-  upStatus.value = true
-  downStatus.value = false
-}
 </script>
 
 <style lang="scss" scoped>

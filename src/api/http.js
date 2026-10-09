@@ -29,15 +29,43 @@ http.interceptors.request.use((config) => {
   return config
 })
 
+function requestUrl(config) {
+  return String(config?.url || '')
+}
+
+function isLoginRequest(config) {
+  return requestUrl(config).includes('/auth/login')
+}
+
+let loginRedirecting = false
+
+/** 业务接口 401：清掉本地登录态，全屏登录层盖住页面 */
+function forceLogin(config, message) {
+  if (isLoginRequest(config) || loginRedirecting) return
+  loginRedirecting = true
+  clearAuthStorage()
+  window.dispatchEvent(
+    new CustomEvent('convention:unauthorized', {
+      detail: { message: message || '登录已过期，请重新登录' },
+    }),
+  )
+  window.setTimeout(() => {
+    loginRedirecting = false
+  }, 800)
+}
+
 http.interceptors.response.use(
   (response) => {
     const body = response.data
     // 统一信封：成功只把 data 交给业务层，页面不用改解析逻辑
     if (isEnvelope(body)) {
+      if (body.code === 401) {
+        forceLogin(response.config, body.msg)
+      }
       if (body.code !== 0) {
         const err = new Error(body.msg || '请求失败')
         err.response = {
-          status: response.status,
+          status: body.code === 401 ? 401 : response.status,
           data: body,
         }
         err.config = response.config
@@ -49,8 +77,6 @@ http.interceptors.response.use(
   },
   (error) => {
     const status = error?.response?.status
-    const url = error?.config?.url || ''
-    const isLoginRequest = String(url).includes('/auth/login')
     const body = error?.response?.data
 
     if (isEnvelope(body) && body.msg) {
@@ -59,13 +85,8 @@ http.interceptors.response.use(
       error.message = body.detail
     }
 
-    if (status === 401 && !isLoginRequest) {
-      clearAuthStorage()
-      window.dispatchEvent(
-        new CustomEvent('convention:unauthorized', {
-          detail: { message: error.message || '登录已过期，请重新登录' },
-        }),
-      )
+    if (status === 401 || body?.code === 401) {
+      forceLogin(error.config, error.message)
     }
 
     return Promise.reject(error)

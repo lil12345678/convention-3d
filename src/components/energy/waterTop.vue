@@ -112,7 +112,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['A1层', 'A2层', 'A3层', 'A4层', 'A5层', 'A6层'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -143,27 +143,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [90, 70, 40, 85, 40, 80]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
-}
-const getList = () => {
-  alarmList.value = [
-    { rank: 'TOP', num: 1, name: 'AI视频告警', value: 4675, percentage: 70, color: '#DD1D4E' },
-    { rank: 'TOP', num: 2, name: '入侵告警', value: 4675, percentage: 50, color: '#FFAF28' },
-    { rank: 'TOP', num: 3, name: '消防告警', value: 4675, percentage: 20, color: '#00D0FF' },
-    { rank: 'TOP', num: 4, name: '消防告警', value: 4675, percentage: 20, color: '#AFFFCC' },
-    { rank: 'TOP', num: 5, name: '消防告警', value: 4675, percentage: 20, color: '#fff' },
-  ]
 }
 onUnmounted(() => {
   if (myChart) {

@@ -139,7 +139,7 @@ const initChart15 = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -223,7 +223,7 @@ const initChart18 = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -287,39 +287,6 @@ const initChart18 = () => {
     ],
   }
   myChart2.setOption(option)
-}
-const updateChartData = () => {
-  chartData1.value = [120, 150, 130, 140, 120, 130] // 更新数据
-  chartData2.value = [120, 150, 130, 140, 120, 130] // 更新数据
-
-  if (myChart1) {
-    myChart1.setOption({
-      series: [
-        {
-          data: chartData1.value, // 使用最新数据
-        },
-        {
-          data: chartData2.value, // 使用最新数据
-        },
-      ],
-    })
-  }
-}
-const updateChartData2 = () => {
-  chartData3.value = [12, 10, 130, 140, 120, 130] // 更新数据
-  chartData4.value = [120, 15, 13, 140, 20, 30] // 更新数据
-  if (myChart2) {
-    myChart2.setOption({
-      series: [
-        {
-          data: chartData3.value, // 使用最新数据
-        },
-        {
-          data: chartData4.value, // 使用最新数据
-        },
-      ],
-    })
-  }
 }
 // 添加组件卸载时的清理
 onUnmounted(() => {

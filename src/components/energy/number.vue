@@ -107,16 +107,6 @@ const selectYear = (year) => {
   showYearOptions.value = false
   paintNumber()
 }
-const getNum = () => {
-  const data = 35678
-
-  let roundedData = data.toString()
-  const formattedData = roundedData.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  num1.value = formattedData
-  num2.value = formattedData
-  num3.value = formattedData
-  num4.value = formattedData
-}
 const initChart = () => {
   myChart = echarts.init(chartRef17.value)
   const option = {
@@ -129,7 +119,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -162,18 +152,6 @@ const initChart = () => {
   myChart.setOption(option)
 }
 
-const getChartData = () => {
-  chartData.value = [10, 80, 20, 50, 42, 13]
-  if (myChart) {
-    myChart.setOption({
-      series: [
-        {
-          data: chartData.value, // 使用最新数据
-        },
-      ],
-    })
-  }
-}
 onUnmounted(() => {
   if (myChart) {
     myChart.dispose()

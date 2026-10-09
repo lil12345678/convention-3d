@@ -7,20 +7,20 @@
     <div class="dialog-content">
       <div class="dialog-text">
         <div class="text-item">
-          <div>设备名称</div>
+          <div>设备类型</div>
           <div>{{ deviceInfo.name }}</div>
         </div>
         <div class="text-item">
-          <div>设备编号</div>
-          <div>AC12432</div>
+          <div>设备数量</div>
+          <div>{{ summary ? summary.total : '--' }}</div>
         </div>
         <div class="text-item">
-          <div>设备型号</div>
-          <div>3255</div>
+          <div>在线 / 离线 / 故障</div>
+          <div>{{ summary ? `${summary.online} / ${summary.offline} / ${summary.fault}` : '--' }}</div>
         </div>
         <div class="text-item">
-          <div>设备状态</div>
-          <div>在线</div>
+          <div>所在场馆</div>
+          <div>{{ summary && summary.halls.length ? summary.halls.join('、') : '--' }}</div>
         </div>
       </div>
       <!-- <button class="dialog-btn" @click.stop="handleClose">关闭</button> -->
@@ -30,8 +30,9 @@
 
 <script setup>
 import ThreeManager from '@/views/three/index.js'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as THREE from 'three'
+import { getDevices, summarizeDevices } from '@/utils/screenStats'
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -44,6 +45,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible'])
+const summary = ref(null)
+watch(
+  () => props.visible && props.deviceInfo?.name,
+  async (name) => {
+    summary.value = null
+    if (!name) return
+    const devices = await getDevices()
+    if (props.deviceInfo?.name === name) summary.value = summarizeDevices(devices, name)
+  },
+  { immediate: true }
+)
 // 计算对话框位置
 const dialogStyle = computed(() => {
   if (!props.deviceInfo.position) return {}
@@ -118,6 +130,10 @@ const handleClose = () => {
     // height: 40px;
     color: #ffffff;
     font-size: 16px;
+    gap: 12px;
+    > div:last-child {
+      text-align: right;
+    }
   }
 }
 </style>

@@ -105,14 +105,6 @@ onMounted(async () => {
   statusNum4.value = data.overdue
   applyChart(myChart, data.month.labels, [data.month.values])
 })
-const getPercent = () => {
-  const data = 29.2918
-  if (data > 100) {
-    percentage.value = 100
-  } else {
-    percentage.value = Math.round(data)
-  }
-}
 const initChart = () => {
   myChart = echarts.init(chartRef3.value)
   const option = {
@@ -126,7 +118,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['01', '02', '03', '04', '05', '06', '07', '08', '09'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },
@@ -160,16 +152,6 @@ const initChart = () => {
     ],
   }
   myChart.setOption(option)
-}
-const getChartData = () => {
-  chartData.value = [40, 20, 80, 60, 30, 20, 90, 40, 60]
-  const labels = ['1', '2', '3', '4', '5', '6', '7']
-  if (myChart) {
-    myChart.setOption({
-      xAxis: { data: labels },
-      series: [{ data: chartData.value }],
-    })
-  }
 }
 </script>
 <style lang="scss" scoped>

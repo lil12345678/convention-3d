@@ -130,7 +130,7 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['01', '02', '03', '04', '05', '06', '07', '08', '09'],
+      data: [],
       axisLine: {
         lineStyle: { color: '#4C5973' },
       },

@@ -19,7 +19,7 @@
     <DeviceDialog v-model:visible="showDeviceDialog" :deviceInfo="deviceInfo" />
     <!-- loading加载蒙版 -->
     <AnimationLoadingMask />
-    <router-view :key="$route.fullPath" />
+    <router-view :key="`${auth.sessionVersion}-${$route.fullPath}`" />
   </div>
   <!-- </v-scale-screen> -->
 </template>
@@ -37,6 +37,9 @@ import ThreeManager from './three/index.js'
 import eventHub from '@/utils/eventHub'
 
 import { initICCToken } from '@/utils/iccToken.js'
+import { useAuthStore } from '@/store/modules/auth'
+
+const auth = useAuthStore()
 
 const isNight = ref(false)
 const showDeviceDialog = ref(false)
