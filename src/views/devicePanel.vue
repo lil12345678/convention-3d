@@ -79,7 +79,7 @@ import d8 from '../assets/icon/d4-2.png'
 const CATEGORY_ICONS = { monitor, security, elevator, energy }
 const LEAF_ICONS = {
   入侵探测器: d1,
-  停车场匝道: d2,
+  停车场道闸: d2,
   门禁: d3,
   照明: d4,
   冷热源: d5,
@@ -96,7 +96,7 @@ const SCENE_LABELS = {
   照明插座: 'ac5',
   景观照明: 'ac6',
   入侵探测器: 'security',
-  停车场匝道: 'parking',
+  停车场道闸: 'parking',
   门禁: 'door',
 }
 /** 监控设备按设备组展示成树，其余分类平铺 */

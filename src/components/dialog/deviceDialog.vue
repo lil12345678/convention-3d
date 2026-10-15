@@ -6,21 +6,9 @@
     </div>
     <div class="dialog-content">
       <div class="dialog-text">
-        <div class="text-item">
-          <div>设备类型</div>
-          <div>{{ deviceInfo.name }}</div>
-        </div>
-        <div class="text-item">
-          <div>设备数量</div>
-          <div>{{ summary ? summary.total : '--' }}</div>
-        </div>
-        <div class="text-item">
-          <div>在线 / 离线 / 故障</div>
-          <div>{{ summary ? `${summary.online} / ${summary.offline} / ${summary.fault}` : '--' }}</div>
-        </div>
-        <div class="text-item">
-          <div>所在场馆</div>
-          <div>{{ summary && summary.halls.length ? summary.halls.join('、') : '--' }}</div>
+        <div class="text-item" v-for="row in rows" :key="row.label">
+          <div>{{ row.label }}</div>
+          <div :class="{ [`status-${row.value}`]: row.label === '设备状态' }">{{ row.value }}</div>
         </div>
       </div>
       <!-- <button class="dialog-btn" @click.stop="handleClose">关闭</button> -->
@@ -32,7 +20,7 @@
 import ThreeManager from '@/views/three/index.js'
 import { ref, computed, watch } from 'vue'
 import * as THREE from 'three'
-import { getDevices, summarizeDevices } from '@/utils/screenStats'
+import { fetchDeviceBySceneNode } from '@/api/convention'
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -45,17 +33,39 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible'])
-const summary = ref(null)
+const device = ref(null)
+const error = ref('')
 watch(
   () => props.visible && props.deviceInfo?.name,
-  async (name) => {
-    summary.value = null
-    if (!name) return
-    const devices = await getDevices()
-    if (props.deviceInfo?.name === name) summary.value = summarizeDevices(devices, name)
+  async (node) => {
+    device.value = null
+    error.value = ''
+    if (!node) return
+    try {
+      const row = await fetchDeviceBySceneNode(node)
+      if (props.deviceInfo?.name === node) device.value = row
+    } catch (err) {
+      if (props.deviceInfo?.name === node) error.value = err.message || '加载失败'
+    }
   },
   { immediate: true }
 )
+const rows = computed(() => {
+  const d = device.value
+  if (!d) {
+    return [
+      { label: '设备点位', value: props.deviceInfo?.name || '--' },
+      { label: '设备信息', value: error.value || '加载中…' },
+    ]
+  }
+  return [
+    { label: '设备名称', value: d.name },
+    { label: '设备编号', value: d.code },
+    { label: '设备型号', value: d.model || '--' },
+    { label: '设备状态', value: d.status },
+    { label: '所在位置', value: `${d.hall_name} ${d.floor}` },
+  ]
+})
 // 计算对话框位置
 const dialogStyle = computed(() => {
   if (!props.deviceInfo.position) return {}
@@ -133,6 +143,15 @@ const handleClose = () => {
     gap: 12px;
     > div:last-child {
       text-align: right;
+    }
+    .status-在线 {
+      color: #17fcff;
+    }
+    .status-离线 {
+      color: #b0b0b0;
+    }
+    .status-故障 {
+      color: #feb817;
     }
   }
 }

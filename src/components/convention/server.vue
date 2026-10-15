@@ -8,19 +8,18 @@
         <div class="record-list">
           <div class="table-header">
             <span>序号</span>
-            <span>活动名称</span>
-            <span>场馆</span>
-            <span>活动类型</span>
+            <span>展商名称</span>
+            <span>展商展位</span>
+            <span>服务类型</span>
             <span>时间</span>
           </div>
           <div class="table-body" v-if="tableData.length">
             <div class="record-item" v-for="(item, index) in tableData" :key="index">
               <span>{{ item.id }}</span>
-              <span>{{ item.code }}</span>
-              <span>{{ item.type }}</span>
-
-              <span>{{ item.status }}</span
-              ><span>{{ item.time }}</span>
+              <span :title="item.name">{{ item.name }}</span>
+              <span>{{ item.booth }}</span>
+              <span :title="item.status">{{ item.type }}</span>
+              <span>{{ item.time }}</span>
             </div>
           </div>
           <Empty v-else />
@@ -32,7 +31,7 @@
           <div ref="chartRef20" class="chart-container"></div>
         </div>
         <div class="r-bottom">
-          <div class="title">场馆展会分布</div>
+          <div class="title">参展商区域分布</div>
           <img src="../../assets/img/circle-data2.png" class="circle-outer" />
           <div ref="chartRef21" class="chart-container"></div>
         </div>
@@ -44,7 +43,8 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import Empty from '@/components/commonVue/emptyData.vue'
-import { applyChart, getCrowd, getExhibitionEvents, getExhibitions } from '@/utils/screenStats'
+import { applyChart, getCrowd } from '@/utils/screenStats'
+import { fetchExhibitorProvinces, fetchExhibitorServices } from '@/api/convention'
 
 const chartRef20 = ref(null)
 const chartRef21 = ref(null)
@@ -55,25 +55,27 @@ const chartData5 = ref([])
 // 表格数据
 const tableData = ref([])
 onMounted(async () => {
-  const [events, exhibitions, crowd] = await Promise.all([
-    getExhibitionEvents(),
-    getExhibitions(),
-    getCrowd(),
+  const settle = (request, fallback) =>
+    request.catch((error) => {
+      console.warn('展商服务面板数据加载失败', error.message)
+      return fallback
+    })
+  const [services, provinces, crowd] = await Promise.all([
+    settle(fetchExhibitorServices(20), []),
+    settle(fetchExhibitorProvinces(), []),
+    settle(getCrowd(), { items: [] }),
   ])
-  tableData.value = events.slice(0, 8).map((item, index) => ({
+  tableData.value = services.map((item, index) => ({
     id: String(index + 1).padStart(2, '0'),
-    code: item.title,
-    type: item.hall_name,
-    status: item.event_type,
-    time: item.start_time,
+    name: item.exhibitor_name,
+    booth: item.booth,
+    type: item.service_type,
+    status: item.status,
+    time: item.created_at,
   }))
   const halls = (crowd.items || []).map((item) => item.hall_name)
   chartData1.value = (crowd.items || []).map((item) => item.headcount)
-  const hallCount = {}
-  exhibitions.forEach((item) => {
-    hallCount[item.hall_name] = (hallCount[item.hall_name] || 0) + 1
-  })
-  chartData5.value = Object.entries(hallCount).map(([name, value]) => ({ name, value }))
+  chartData5.value = provinces.map((item) => ({ name: item.province, value: item.count }))
   await nextTick()
   if (chartRef20.value) {
     initChart()
@@ -187,7 +189,7 @@ const initChart2 = () => {
     },
     series: [
       {
-        name: '展会数',
+        name: '展商数',
         type: 'pie',
         radius: ['40%', '60%'],
         center: ['25%', '50%'],
@@ -260,7 +262,7 @@ onUnmounted(() => {
       margin-top: 20px;
       .table-header {
         display: grid;
-        grid-template-columns: 0.8fr 0.8fr 1.2fr 1fr 2.4fr;
+        grid-template-columns: 0.6fr 2.2fr 1.2fr 1fr 1.8fr;
         padding: 10px;
         background: rgba(0, 137, 255, 0.5);
         font-size: 12px;
@@ -288,13 +290,19 @@ onUnmounted(() => {
 
         .record-item {
           display: grid;
-          grid-template-columns: 0.8fr 0.8fr 1.2fr 1fr 2.4fr;
+          grid-template-columns: 0.6fr 2.2fr 1.2fr 1fr 1.8fr;
           height: 45px;
           line-height: 45px;
           font-size: 14px;
           text-align: center;
           border-bottom: 1px solid #516aa2;
           color: rgba(255, 255, 255, 0.8);
+
+          span {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
 
           &:hover {
             background: rgba(0, 170, 255, 0.1);

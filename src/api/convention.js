@@ -34,3 +34,10 @@ export const fetchParking = () => once('parking', () => http.get('/parking'))
 export const fetchCrowd = () => once('crowd', () => http.get('/crowd'))
 export const fetchEmergency = () => once('emergency', () => http.get('/emergency'))
 export const fetchHeatmap = (hall) => http.get('/heatmap', { params: { hall } })
+export const fetchDeviceBySceneNode = (node) =>
+  once(`device-scene:${node}`, () => http.get(`/devices/scene/${encodeURIComponent(node)}`))
+export const fetchExhibitorServices = (limit = 20) =>
+  once(`exhibitor-services:${limit}`, () => http.get('/exhibitor-services', { params: { limit } }))
+export const fetchExhibitorProvinces = () => once('exhibitor-provinces', () => http.get('/exhibitors/province-stats'))
+export const fetchCameras = () => once('cameras', () => http.get('/cameras'))
+export const fetchWeather = () => http.get('/weather')

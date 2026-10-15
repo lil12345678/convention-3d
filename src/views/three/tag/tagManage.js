@@ -123,7 +123,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '入侵探测器'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -171,7 +171,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '停车场匝道'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -212,13 +212,13 @@ class TagManager {
     let type = 'door'
 
     modelMesh.traverse((child) => {
-      if (child.name.includes('入侵探测器')) {
+      if (child.name.includes('门禁')) {
         const label = createLabel(
           null,
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '门禁'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -265,7 +265,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '空调用电'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -312,7 +312,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '集中空调'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -359,7 +359,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '辐射空调'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -406,7 +406,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '应急照明'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -453,7 +453,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '照明插座'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)
@@ -500,7 +500,7 @@ class TagManager {
           child.position,
           'three-label-icon2',
           `textures/labels/${type}.png`,
-          '景观照明'
+          child.userData.name || child.name
         )
         // const label = createLabel(child.position, 'stadium', child.name)
         label.rotateY(Math.PI / 5)

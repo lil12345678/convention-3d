@@ -1,11 +1,15 @@
 <template>
   <div class="empty-box">
     <img src="../../assets/img/no-data.png" alt="" class="empty-img" />
-    <div class="empty-text">暂无数据</div>
+    <div class="empty-text">{{ text }}</div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+defineProps({
+  text: { type: String, default: '暂无数据' },
+})
+</script>
 
 <style lang="scss" scoped>
 .empty-box {

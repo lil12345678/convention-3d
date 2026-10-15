@@ -3,9 +3,11 @@
     <img src="../assets/img/title.png" class="header-img" />
     <div class="header-left">
       <img src="../assets/img/location.png" alt="" class="img1" />
-      <div class="location">--</div>
+      <div class="location">{{ weather?.city || '--' }}</div>
       <img src="../assets/img/weather.png" alt="" class="img2" />
-      <span class="weather">--</span>
+      <span class="weather" :title="weather ? `湿度 ${weather.humidity}% · ${weather.wind}` : ''">
+        {{ weather ? `${weather.weather} ${weather.temperature}°C` : '--' }}
+      </span>
     </div>
     <div class="header-center">
       <div class="center-l">
@@ -75,6 +77,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getDateWeek } from '@/utils/date.js'
 import { debounce } from '@/utils/commonFunc.js'
 import { getAlarmView } from '@/utils/screenStats'
+import { fetchWeather } from '@/api/convention'
 import { useAuthStore } from '@/store/modules/auth'
 
 const NAV_TITLES = {
@@ -92,7 +95,10 @@ const currentTime = ref('')
 /** 高亮跟随路由，点击、AI 指令、浏览器前进后退都能同步 */
 const activeButton = computed(() => NAV_TITLES[route.path] || '')
 const alarmCount = ref(0)
+const weather = ref(null)
+const WEATHER_REFRESH_MS = 30 * 60 * 1000
 let timer = null
+let weatherTimer = null
 const updateTime = () => {
   const now = new Date()
   const hours = String(now.getHours()).padStart(2, '0')
@@ -122,16 +128,34 @@ const loadAlarmCount = async () => {
     console.warn('告警数加载失败', error)
   }
 }
-watch(() => auth.sessionVersion, loadAlarmCount)
+const loadWeather = async () => {
+  if (!auth.isAuthenticated) {
+    weather.value = null
+    return
+  }
+  try {
+    weather.value = await fetchWeather()
+  } catch (error) {
+    weather.value = null
+    console.warn('天气加载失败', error.message)
+  }
+}
+watch(() => auth.sessionVersion, () => {
+  loadAlarmCount()
+  loadWeather()
+})
 
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  weatherTimer = setInterval(loadWeather, WEATHER_REFRESH_MS)
   loadAlarmCount()
+  loadWeather()
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  clearInterval(weatherTimer)
 })
 </script>
 
