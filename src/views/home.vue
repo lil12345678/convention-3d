@@ -17,6 +17,7 @@
     <DevicePanel />
     <!-- 设备信息弹窗 -->
     <DeviceDialog v-model:visible="showDeviceDialog" :deviceInfo="deviceInfo" />
+    <AiChatPanel />
     <!-- loading加载蒙版 -->
     <AnimationLoadingMask />
     <router-view :key="`${auth.sessionVersion}-${$route.fullPath}`" />
@@ -31,6 +32,7 @@ import ComHeader from './comheader.vue'
 import ControlPanel from '@/views/controlPanel.vue'
 import DevicePanel from '@/views/devicePanel.vue'
 import DeviceDialog from '@/components/dialog/deviceDialog.vue'
+import AiChatPanel from '@/components/ai/AiChatPanel.vue'
 import AnimationLoadingMask from '@/components/commonVue/loadingMask.vue'
 import ThreeManager from './three/index.js'
 

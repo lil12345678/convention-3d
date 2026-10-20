@@ -41,3 +41,7 @@ export const fetchExhibitorServices = (limit = 20) =>
 export const fetchExhibitorProvinces = () => once('exhibitor-provinces', () => http.get('/exhibitors/province-stats'))
 export const fetchCameras = () => once('cameras', () => http.get('/cameras'))
 export const fetchWeather = () => http.get('/weather')
+/** 交给后端白名单校验。画面指令只回声，查询指令带上数据。 */
+export const postSceneCommand = (command) => http.post('/scene/command', command)
+/** 非流式对话。模型可能连续查库，超时要比普通接口长。 */
+export const postChat = (messages) => http.post('/chat', { messages }, { timeout: 70000 })

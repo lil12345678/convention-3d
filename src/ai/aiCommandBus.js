@@ -1,4 +1,5 @@
 import router from '@/router'
+import { postSceneCommand } from '@/api/convention'
 import { isLoggedIn } from '@/utils/conventionAuth'
 
 /**
@@ -42,8 +43,6 @@ const BUILDINGS = [
 const FLOORS = { '1F': '1', 恢复: '2', 全部展开: '3' }
 const FLOOR_ALIASES = { 1: '1F', '1f': '1F', 一层: '1F', 收起: '恢复', 展开: '全部展开' }
 
-const ROUTES = { route1: 'route1', route2: 'route2', 路线一: 'route1', 路线二: 'route2', 1: 'route1', 2: 'route2' }
-
 /** 控制面板的切换按钮带 400ms 防抖，连续两步之间要等过防抖窗口，否则第二步会被吞掉 */
 const STEP_GAP_MS = 450
 
@@ -66,13 +65,6 @@ class AiCommandError extends Error {}
 
 function fail(message) {
   throw new AiCommandError(message)
-}
-
-function pick(map, raw, label) {
-  const key = String(raw ?? '').trim()
-  const value = map[key] ?? map[key.toLowerCase()]
-  if (!value) fail(`${label}不支持：${raw}`)
-  return value
 }
 
 function normalizeBuilding(raw) {
@@ -141,22 +133,6 @@ const HANDLERS = {
     return visible ? '已显示人流热力图' : '已关闭人流热力图'
   },
 
-  async startRoam({ route = 'route1' }) {
-    const value = pick(ROUTES, route, '漫游路线')
-    const scene = requireScene()
-    scene.switchTab('漫游')
-    await sleep(STEP_GAP_MS)
-    scene.selectRoute(value)
-    await sleep(STEP_GAP_MS)
-    scene.startRoam()
-    return `已开始漫游${value === 'route1' ? '路线一' : '路线二'}`
-  },
-
-  async stopRoam() {
-    requireScene().switchTab('总览')
-    return '已停止漫游'
-  },
-
   async openDeviceCategory({ category }) {
     const panel = requireDevicePanel()
     const name = String(category ?? '').trim()
@@ -180,8 +156,6 @@ export const AI_ACTIONS = [
   { action: 'selectBuilding', params: { building: BUILDINGS }, desc: '镜头定位到某个场馆' },
   { action: 'selectFloor', params: { floor: Object.keys(FLOORS) }, desc: '场馆楼层展开/收起，需先 selectBuilding' },
   { action: 'toggleHeatmap', params: { visible: [true, false] }, desc: '显示或关闭人流热力图' },
-  { action: 'startRoam', params: { route: ['route1', 'route2'] }, desc: '开始自动漫游' },
-  { action: 'stopRoam', params: {}, desc: '停止漫游并回到总览' },
   {
     action: 'openDeviceCategory',
     params: { category: ['监控设备', '安防设备', '楼宇自控', '能效设备'] },
@@ -241,6 +215,53 @@ export async function executeAiCommands(input) {
   return { ok: true, results }
 }
 
+function commandList(input) {
+  let commands = input
+  if (typeof input === 'string') commands = JSON.parse(input)
+  return Array.isArray(commands) ? commands : [commands]
+}
+
+/**
+ * 先交给 POST /api/scene/command 校验。
+ * 画面指令再用本地总线执行；查询指令直接返回后端的 message 和 data。
+ */
+export async function runSceneCommands(input) {
+  if (!isLoggedIn()) {
+    return { ok: false, results: [{ action: null, ok: false, message: '请先登录' }] }
+  }
+  let list
+  try {
+    list = commandList(input)
+  } catch {
+    return { ok: false, results: [{ action: null, ok: false, message: '指令不是合法 JSON' }] }
+  }
+
+  let checked
+  try {
+    checked = await postSceneCommand(list.length === 1 ? list[0] : list)
+  } catch (error) {
+    return { ok: false, results: [{ action: null, ok: false, message: error?.message || '指令校验失败' }] }
+  }
+
+  const results = []
+  for (const item of checked.results || []) {
+    if (!item.ok) {
+      results.push(item)
+      return { ok: false, results }
+    }
+    if (item.kind !== 'screen') {
+      results.push(item)
+      continue
+    }
+    if (results.length) await sleep(STEP_GAP_MS)
+    const local = await executeAiCommands({ action: item.action, params: item.params || {} })
+    const scene = local.results[0] || {}
+    results.push({ ...item, ok: local.ok, message: scene.message || item.message })
+    if (!local.ok) return { ok: false, results }
+  }
+  return { ok: true, results }
+}
+
 if (import.meta.env.DEV) {
-  window.aiCommandBus = { execute: executeAiCommands, actions: AI_ACTIONS }
+  window.aiCommandBus = { execute: executeAiCommands, run: runSceneCommands, actions: AI_ACTIONS }
 }
