@@ -16,14 +16,29 @@
           v-for="item in messages"
           :key="item.id"
           class="bubble"
-          :class="item.role"
+          :class="[item.role, { caret: loading && item.id === streamingId }]"
         >
           {{ item.content }}
         </div>
-        <div v-if="loading" class="bubble assistant loading">正在回复…</div>
+        <div v-if="loading && streamingId === 0" class="bubble assistant loading">
+          {{ statusText || '正在回复…' }}
+        </div>
       </div>
 
       <p v-if="errorText" class="ai-chat-error" role="alert">{{ errorText }}</p>
+
+      <div class="ai-chat-chips">
+        <button
+          v-for="item in quickQuestions"
+          :key="item"
+          class="chip"
+          type="button"
+          :disabled="loading"
+          @click="askQuick(item)"
+        >
+          {{ item }}
+        </button>
+      </div>
 
       <form class="ai-chat-form" @submit.prevent="send">
         <textarea
@@ -43,19 +58,25 @@
 </template>
 
 <script setup>
-import { nextTick, ref, watch } from 'vue'
-import { postChat } from '@/api/convention'
+import { nextTick, onMounted, ref, watch } from 'vue'
+// import { postChat } from '@/api/convention'
+// -非流式写法
+import { fetchChatSession, streamChat } from '@/api/convention'
 import { executeAiCommands } from '@/ai/aiCommandBus'
 import { useAuthStore } from '@/store/modules/auth'
 
 const auth = useAuthStore()
+const quickQuestions = ['看看告警', '今天的告警', '看看用电', '切到5号馆']
 const open = ref(false)
 const draft = ref('')
 const loading = ref(false)
+const statusText = ref('')
+const streamingId = ref(0)
 const errorText = ref('')
 const messages = ref([])
 const listEl = ref(null)
 let seq = 0
+let streamAbort = null
 
 function pushMessage(role, content) {
   messages.value.push({ id: ++seq, role, content })
@@ -82,30 +103,133 @@ function errorMessage(error) {
   return message
 }
 
-async function ask() {
+// async function ask() {
+//   errorText.value = ''
+//   loading.value = true
+//   await scrollToEnd()
+//   try {
+//     const data = await postChat(historyPayload())
+//     const reply = String(data?.reply || '').trim() || '（没有回复）'
+//     pushMessage('assistant', reply)
+//     const commands = Array.isArray(data?.commands) ? data.commands : []
+//     if (commands.length) {
+//       const scene = await executeAiCommands(
+//         commands.map((item) => ({ action: item.action, params: item.params || {} })),
+//       )
+//       if (!scene.ok) {
+//         const failed = scene.results?.find((item) => !item.ok)
+//         errorText.value = failed?.message || '画面指令执行失败'
+//       }
+//     }
+//   } catch (error) {
+//     errorText.value = errorMessage(error)
+//   } finally {
+//     loading.value = false
+//     await scrollToEnd()
+//   }
+// }
+// -非流式写法
+
+async function runStreamCommands(commands) {
+  if (!Array.isArray(commands) || !commands.length) return
+  const scene = await executeAiCommands(
+    commands.map((item) => ({ action: item.action, params: item.params || {} })),
+  )
+  if (!scene.ok) {
+    const failed = scene.results?.find((item) => !item.ok)
+    errorText.value = failed?.message || '画面指令执行失败'
+  }
+}
+
+const STREAM_STATUS = {
+  query_alarms: '正在查询告警',
+  query_energy: '正在查询能耗',
+  query_devices: '正在查询设备',
+  query_hall: '正在查询场馆',
+  navigate: '正在准备切换页面',
+  selectBuilding: '正在准备切换场馆',
+  selectFloor: '正在准备切换楼层',
+  toggleHeatmap: '正在准备热力图',
+  openDeviceCategory: '正在准备设备分类',
+  showDevice: '正在准备设备标签',
+  overview: '正在准备总览',
+  showVenueLabels: '正在准备场馆标签',
+}
+
+async function askStream() {
+  const history = historyPayload()
   errorText.value = ''
+  statusText.value = '正在理解问题…'
+  streamingId.value = 0
   loading.value = true
+  streamAbort = new AbortController()
   await scrollToEnd()
+  let assistant = null
   try {
-    const data = await postChat(historyPayload())
-    const reply = String(data?.reply || '').trim() || '（没有回复）'
-    pushMessage('assistant', reply)
-    const commands = Array.isArray(data?.commands) ? data.commands : []
-    if (commands.length) {
-      const scene = await executeAiCommands(
-        commands.map((item) => ({ action: item.action, params: item.params || {} })),
-      )
-      if (!scene.ok) {
-        const failed = scene.results?.find((item) => !item.ok)
-        errorText.value = failed?.message || '画面指令执行失败'
+    await streamChat(history, async ({ event, data }) => {
+      if (event === 'tool') {
+        statusText.value = STREAM_STATUS[data?.name] || '正在查询'
+        await scrollToEnd()
+        return
       }
-    }
+      if (event === 'delta') {
+        if (!assistant) {
+          messages.value.push({ id: ++seq, role: 'assistant', content: '' })
+          assistant = messages.value[messages.value.length - 1]
+          streamingId.value = assistant.id
+        }
+        assistant.content += data?.text || ''
+        await scrollToEnd()
+        return
+      }
+      if (event === 'commands') {
+        await runStreamCommands(data?.commands)
+        return
+      }
+      if (event === 'error') {
+        throw new Error(data?.message || '对话失败，请重试')
+      }
+      if (event === 'done' && assistant && !assistant.content.trim()) {
+        assistant.content = String(data?.reply || '').trim() || '（没有回复）'
+      }
+    }, streamAbort.signal)
+    if (assistant && !assistant.content.trim()) assistant.content = '（没有回复）'
   } catch (error) {
+    if (error?.name === 'AbortError') return
+    if (assistant && !assistant.content.trim()) {
+      messages.value = messages.value.filter((item) => item.id !== assistant.id)
+    }
     errorText.value = errorMessage(error)
   } finally {
     loading.value = false
+    statusText.value = ''
+    streamingId.value = 0
+    streamAbort = null
     await scrollToEnd()
   }
+}
+
+async function loadSession() {
+  if (!auth.isAuthenticated || loading.value) return
+  try {
+    const data = await fetchChatSession()
+    const saved = Array.isArray(data?.messages) ? data.messages : []
+    messages.value = saved.map((item) => ({
+      id: item.id,
+      role: item.role,
+      content: item.content,
+    }))
+    seq = saved.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0)
+    await scrollToEnd()
+  } catch (error) {
+    errorText.value = errorMessage(error)
+  }
+}
+
+function askQuick(text) {
+  if (loading.value) return
+  draft.value = text
+  send()
 }
 
 async function send() {
@@ -117,19 +241,29 @@ async function send() {
   }
   draft.value = ''
   pushMessage('user', text)
-  await ask()
+  await askStream()
 }
 
 watch(
   () => auth.isAuthenticated,
   (loggedIn) => {
-    if (loggedIn) return
-    messages.value = []
-    draft.value = ''
-    errorText.value = ''
-    loading.value = false
+    if (!loggedIn) {
+      streamAbort?.abort()
+      messages.value = []
+      draft.value = ''
+      errorText.value = ''
+      statusText.value = ''
+      streamingId.value = 0
+      loading.value = false
+      return
+    }
+    loadSession()
   },
 )
+
+onMounted(() => {
+  if (auth.isAuthenticated) loadSession()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -229,10 +363,43 @@ watch(
   color: rgba(255, 255, 255, 0.75);
 }
 
+.bubble.caret::after {
+  content: '▍';
+  margin-left: 2px;
+  animation: caret-blink 1s step-end infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .ai-chat-error {
   margin: 8px 0 0;
   color: #ffb4a8;
   line-height: 1.4;
+}
+
+.ai-chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chip {
+  border: 1px solid rgba(64, 158, 255, 0.5);
+  background: rgba(64, 158, 255, 0.16);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .ai-chat-form {

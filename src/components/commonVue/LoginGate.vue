@@ -1,7 +1,7 @@
 <template>
   <div v-if="auth.loginVisible" class="login-gate">
     <div class="login-panel">
-      <div class="brand">会展数字孪生平台</div>
+      <div class="brand">智慧会展数字孪生运营平台</div>
       <div class="subtitle">请登录后继续访问</div>
 
       <form class="form" @submit.prevent="onSubmit">
